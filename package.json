@@ -1,0 +1,36 @@
+{
+  "name": "armageddon-simple-feedback",
+  "version": "1.0.0",
+  "description": "Feedback backend app for non complex usages.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "jest": {
+    "setupFiles": [
+      "<rootDir>config.ts"
+    ],
+    "transform": {
+      ".(ts|tsx)": ["ts-jest", {"compiler": "ttypescript"}]
+    },
+    "testRegex": "(/src/test/.*|\\.(test))\\.(ts|tsx)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "json"
+    ]
+  },
+  "author": "Pedro Motta",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jest": "^29.2.4",
+    "@types/node": "^18.11.10",
+    "nodemon": "^2.0.20",
+    "ts-auto-mock": "^3.6.2",
+    "ts-jest": "^29.0.3",
+    "ts-node": "^10.9.1",
+    "ttypescript": "^1.5.13",
+    "typescript": "^4.9.3"
+  }
+}
