@@ -102,5 +102,7 @@
     "plugins": [
       { "transform": "ts-auto-mock/transformer", "cacheBetweenTests": false }
     ]
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "src/**/*.spec.ts", "src/example-nested"]
 }
