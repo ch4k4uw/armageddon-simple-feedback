@@ -9,7 +9,7 @@ import { ICredentialRepository } from "../../../src/domain/credential/repository
 import { InvalidTokenError } from "../../../src/domain/token/data/invalid-token-error";
 import { JwToken } from "../../../src/domain/token/data/jw-token";
 import { IJwTokenCmdRepository } from "../../../src/domain/token/repository/jw-token-cmd-repository";
-import { reject } from "../../../tests-config/config";
+import { reject } from "../../util/framework";
 import { SignFixture } from "./stuff/sign-fixture";
 
 const entryPoints = {
@@ -40,40 +40,40 @@ describe('Sign-in tests', () => {
 
     function setupCredentialRepository() {
         when(credentialRepository.findCredentialByLoginAndPassword(entryPoints.success, entryPoints.success))
-            .thenResolve(SignFixture.successCredential);
+            .thenResolve(SignFixture.SignIn.successCredential);
         when(credentialRepository.findCredentialByLoginAndPassword(entryPoints.invalidUserOrPass, entryPoints.invalidUserOrPass))
             .thenResolve(Credential.empty);
         when(credentialRepository.findCredentialByLoginAndPassword(entryPoints.userNotFount, entryPoints.userNotFount))
-            .thenResolve(SignFixture.userNotFoundCredential);
+            .thenResolve(SignFixture.SignIn.userNotFoundCredential);
         when(credentialRepository.findCredentialByLoginAndPassword(entryPoints.invalidAccessToken, entryPoints.invalidAccessToken))
-            .thenResolve(SignFixture.invalidAccessTokenCredential);
+            .thenResolve(SignFixture.SignIn.invalidAccessTokenCredential);
         when(credentialRepository.findCredentialByLoginAndPassword(entryPoints.invalidRefreshToken, entryPoints.invalidRefreshToken))
-            .thenResolve(SignFixture.invalidRefreshTokenCredential);
+            .thenResolve(SignFixture.SignIn.invalidRefreshTokenCredential);
     }
 
     function setupUserRepository() {
-        when(userRepository.findById(SignFixture.successUser.id)).thenResolve(SignFixture.successUser);
-        when(userRepository.findById(SignFixture.userNotFound.id)).thenResolve(User.empty);
-        when(userRepository.findById(SignFixture.invalidAccessTokenUser.id)).thenResolve(SignFixture.invalidAccessTokenUser);
-        when(userRepository.findById(SignFixture.invalidRefreshTokenUser.id)).thenResolve(SignFixture.invalidRefreshTokenUser);
+        when(userRepository.findById(SignFixture.SignIn.successUser.id)).thenResolve(SignFixture.SignIn.successUser);
+        when(userRepository.findById(SignFixture.SignIn.userNotFound.id)).thenResolve(User.empty);
+        when(userRepository.findById(SignFixture.SignIn.invalidAccessTokenUser.id)).thenResolve(SignFixture.SignIn.invalidAccessTokenUser);
+        when(userRepository.findById(SignFixture.SignIn.invalidRefreshTokenUser.id)).thenResolve(SignFixture.SignIn.invalidRefreshTokenUser);
     }
 
     function setupJwTokenRepository() {
         when(jwTokenRepository.insert(anything())).thenCall(async (...args: any[]) => {
             switch((args[0] as JwToken).loggedUser.id) {
-                case SignFixture.successJwToken.loggedUser.id:
-                    return SignFixture.successRawToken;
-                case SignFixture.invalidAccessTokenJwToken.loggedUser.id:
-                    return SignFixture.invalidAccessTokenRawToken;
+                case SignFixture.SignIn.successJwToken.loggedUser.id:
+                    return SignFixture.SignIn.successRawToken;
+                case SignFixture.SignIn.invalidAccessTokenJwToken.loggedUser.id:
+                    return SignFixture.SignIn.invalidAccessTokenRawToken;
                 default:
-                    return SignFixture.invalidRefreshTokenRawToken;
+                    return SignFixture.SignIn.invalidRefreshTokenRawToken;
             }
         });
     }
 
     test('should perform sign-in', async () => {
         const result = await svc.signIn(entryPoints.success, entryPoints.success);
-        expect(result).toEqual({ ...SignFixture.successRawToken });
+        expect(result).toEqual({ ...SignFixture.SignIn.successRawToken });
         verify(credentialRepository.findCredentialByLoginAndPassword(anyString(), anyString())).once();
         verify(userRepository.findById(anyString())).once();
         verify(jwTokenRepository.insert(anything())).once();
