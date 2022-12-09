@@ -4,6 +4,7 @@ import { Credential } from "../../../../src/domain/credential/data/credential"
 import { Role } from "../../../../src/domain/credential/data/role"
 import { JwToken } from "../../../../src/domain/token/data/jw-token";
 import { RawJwToken } from "../../../../src/domain/token/data/raw-jw-token";
+import { CommonFixture } from "../../common/stuff/common-fixture";
 
 
 
@@ -11,15 +12,11 @@ export namespace SignFixture {
     export class SignIn {
         private constructor() { }
         static get successCredential(): Credential {
-            return new Credential(
-                this.successUser.id,
-                this.successUser.email,
-                [Role.admin],
-            );
+            return CommonFixture.credential1;
         }
 
         static get successUser(): User {
-            return new User("a1", "b1", "c1", "d1");
+            return CommonFixture.user1;
         }
 
         static get userNotFoundCredential(): Credential {
@@ -31,19 +28,15 @@ export namespace SignFixture {
         }
 
         static get userNotFound(): User {
-            return new User("a2", "b2", "c2", "d2");
+            return CommonFixture.user2;
         }
 
         static get invalidAccessTokenCredential(): Credential {
-            return new Credential(
-                this.invalidAccessTokenUser.id,
-                this.invalidAccessTokenUser.email,
-                [Role.admin],
-            );
+            return CommonFixture.credential3;
         }
 
         static get invalidAccessTokenUser(): User {
-            return new User("a3", "b3", "c3", "d3");
+            return CommonFixture.user3;
         }
 
         static get invalidRefreshTokenCredential(): Credential {
@@ -55,23 +48,19 @@ export namespace SignFixture {
         }
 
         static get invalidRefreshTokenUser(): User {
-            return new User("a4", "b4", "c4", "d4");
+            return CommonFixture.user4;
         }
 
         static get successLoggedUser(): LoggedUser {
-            return new LoggedUser(this.successUser.id, this.successUser.firstName + ' ' + this.successUser.lastName, this.successCredential.roles);
+            return CommonFixture.loggedUser1;
         }
 
         private static get loggedUser3(): LoggedUser {
-            return new LoggedUser(this.invalidAccessTokenUser.id, this.invalidAccessTokenUser.firstName + ' ' + this.invalidAccessTokenUser.lastName, this.invalidAccessTokenCredential.roles);
-        }
-
-        private static get loggedUser4(): LoggedUser {
-            return new LoggedUser(this.invalidRefreshTokenUser.id, this.invalidRefreshTokenUser.firstName + ' ' + this.invalidRefreshTokenUser.lastName, this.invalidRefreshTokenCredential.roles);
+            return CommonFixture.loggedUser3;
         }
 
         static get successJwToken(): JwToken {
-            return new JwToken(this.successLoggedUser, false, true);
+            return CommonFixture.jwToken1;
         }
 
         static get invalidAccessTokenJwToken(): JwToken {
@@ -79,29 +68,29 @@ export namespace SignFixture {
         }
 
         static get successRawToken(): RawJwToken {
-            return new RawJwToken("a1", "b1");
+            return CommonFixture.rawJwToken1;
         }
 
         static get invalidAccessTokenRawToken(): RawJwToken {
-            return new RawJwToken("", "b2");
+            return this.successRawToken.cloneWith("", "b2");
         }
 
         static get invalidRefreshTokenRawToken(): RawJwToken {
-            return new RawJwToken("a3", "");
+            return this.successRawToken.cloneWith("a3", "");
         }
     }
 
     export class SignOut {
         private constructor() { }
-        static get successJwToken() {
+        static get successJwToken(): JwToken {
             return SignIn.successJwToken;
         }
 
-        static get invalidJwToken() {
-            return new JwToken(SignIn.successLoggedUser, false, false); 
+        static get invalidJwToken(): JwToken {
+            return new JwToken(SignIn.successLoggedUser, false, false);
         }
 
-        static get expiredJwToken() {
+        static get expiredJwToken(): JwToken {
             return new JwToken(SignIn.successLoggedUser, true, true);
         }
     }

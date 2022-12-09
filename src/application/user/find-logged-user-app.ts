@@ -5,7 +5,7 @@ import { ExpiredAccessTokenError } from "../../domain/token/data/expired-access-
 import { InvalidAccessTokenError } from "../../domain/token/data/invalid-access-token-error";
 import { JwToken } from "../../domain/token/data/jw-token";
 
-export class FindUserApp {
+export class FindLoggedUserApp {
     constructor(
         private userRepository: IUserRepository
     ) { }

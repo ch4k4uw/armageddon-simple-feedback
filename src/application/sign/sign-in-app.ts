@@ -1,14 +1,13 @@
 import { UserNotFoundError } from "../../domain/common/data/user-not-found-error";
+import { LoggedUser } from "../../domain/common/entity/logged-user";
 import { User } from "../../domain/common/entity/user";
 import { IUserRepository } from "../../domain/common/repository/user-repository";
-import { InvalidUserOrPasswordError } from "../../domain/credential/data/invalid-login-or-password-error";
 import { Credential } from "../../domain/credential/data/credential";
+import { InvalidUserOrPasswordError } from "../../domain/credential/data/invalid-login-or-password-error";
 import { ICredentialRepository } from "../../domain/credential/repository/credential-repository";
-import { IJwTokenCmdRepository } from "../../domain/token/repository/jw-token-cmd-repository";
-import { LoggedUser } from "../../domain/common/entity/logged-user";
-import { RawJwToken } from "../../domain/token/data/raw-jw-token";
-import { InvalidTokenError } from "../../domain/token/data/invalid-token-error";
 import { JwToken } from "../../domain/token/data/jw-token";
+import { RawJwToken } from "../../domain/token/data/raw-jw-token";
+import { IJwTokenCmdRepository } from "../../domain/token/repository/jw-token-cmd-repository";
 
 export class SignInApp {
     constructor(
@@ -25,8 +24,6 @@ export class SignInApp {
 
         const loggedUser = new LoggedUser(user.id, user.name, credential.roles);
         const result = await this.createRawToken(loggedUser);
-
-        result.assertValidToken();
 
         return result;
     }
@@ -78,15 +75,3 @@ Credential.prototype.assertNotEmpty = function () {
         throw new InvalidUserOrPasswordError();
     }
 }
-
-declare module "../../domain/token/data/raw-jw-token" {
-    interface RawJwToken {
-        assertValidToken(): void;
-    }
-}
-
-RawJwToken.prototype.assertValidToken = function () {
-    if (!this.isAccessToken || !this.isRefreshToken) {
-        throw new InvalidTokenError();
-    }
-};

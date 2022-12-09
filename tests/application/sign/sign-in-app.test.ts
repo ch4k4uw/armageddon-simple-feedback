@@ -6,8 +6,6 @@ import { IUserRepository } from "../../../src/domain/common/repository/user-repo
 import { Credential } from "../../../src/domain/credential/data/credential";
 import { InvalidUserOrPasswordError } from "../../../src/domain/credential/data/invalid-login-or-password-error";
 import { ICredentialRepository } from "../../../src/domain/credential/repository/credential-repository";
-import { InvalidTokenError } from "../../../src/domain/token/data/invalid-token-error";
-import { JwToken } from "../../../src/domain/token/data/jw-token";
 import { IJwTokenCmdRepository } from "../../../src/domain/token/repository/jw-token-cmd-repository";
 import { reject } from "../../util/framework";
 import { SignFixture } from "./stuff/sign-fixture";
@@ -59,16 +57,7 @@ describe('Sign-in tests', () => {
     }
 
     function setupJwTokenRepository() {
-        when(jwTokenRepository.insert(anything())).thenCall(async (...args: any[]) => {
-            switch((args[0] as JwToken).loggedUser.id) {
-                case SignFixture.SignIn.successJwToken.loggedUser.id:
-                    return SignFixture.SignIn.successRawToken;
-                case SignFixture.SignIn.invalidAccessTokenJwToken.loggedUser.id:
-                    return SignFixture.SignIn.invalidAccessTokenRawToken;
-                default:
-                    return SignFixture.SignIn.invalidRefreshTokenRawToken;
-            }
-        });
+        when(jwTokenRepository.insert(anything())).thenResolve(SignFixture.SignIn.successRawToken);
     }
 
     test('should perform sign-in', async () => {
@@ -95,23 +84,5 @@ describe('Sign-in tests', () => {
         verify(credentialRepository.findCredentialByLoginAndPassword(anyString(), anyString())).once();
         verify(userRepository.findById(anyString())).once();
         verify(jwTokenRepository.insert(anything())).never();
-    });
-
-    reject('should reject with invalid access token (empty access-token)', async () => {
-        await svc.signIn(entryPoints.invalidAccessToken, entryPoints.invalidAccessToken);
-    }, (err) => {
-        expect(err).toBeInstanceOf(InvalidTokenError);
-        verify(credentialRepository.findCredentialByLoginAndPassword(anyString(), anyString())).once();
-        verify(userRepository.findById(anyString())).once();
-        verify(jwTokenRepository.insert(anything())).once();
-    });
-    
-    reject('should reject with invalid refresh token (empty refresh-token)', async () => {
-        await svc.signIn(entryPoints.invalidRefreshToken, entryPoints.invalidRefreshToken);
-    }, (err) => {
-        expect(err).toBeInstanceOf(InvalidTokenError);
-        verify(credentialRepository.findCredentialByLoginAndPassword(anyString(), anyString())).once();
-        verify(userRepository.findById(anyString())).once();
-        verify(jwTokenRepository.insert(anything())).once();
     });
 });

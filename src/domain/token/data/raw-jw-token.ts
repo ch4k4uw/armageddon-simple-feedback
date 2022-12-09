@@ -13,4 +13,10 @@ export class RawJwToken {
     get isRefreshToken(): boolean {
         return this.refreshToken !== "";
     }
+
+    cloneWith(accessToken?: string, refreshToken?: string) {
+        return new RawJwToken(
+            accessToken || this.accessToken, refreshToken || this.refreshToken
+        );
+    }
 }

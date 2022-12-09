@@ -8,4 +8,15 @@ export class LoggedUser {
     ) { }
 
     static readonly empty = new LoggedUser();
+
+    cloneWith(
+        id?: string,
+        name?: string,
+        roles?: Role[],
+    ): LoggedUser {
+        id = id == undefined ? this.id : id;
+        name = name == undefined ? this.name : name;
+        roles = roles == undefined ? this.roles : roles;
+        return new LoggedUser(id, name, roles);
+    }
 }
