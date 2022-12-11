@@ -1,4 +1,4 @@
-import { anyString, anything, instance, mock, verify } from "ts-mockito";
+import { anyString, instance, mock, verify } from "ts-mockito";
 import { FindFeedbackByIdApp } from "../../../../src/application/feedback/feedback/find-feedback-by-id-app";
 import { FeedbackNotFoundError } from "../../../../src/domain/feedback/data/feedback-not-found-error";
 import { IFeedbackRepository } from "../../../../src/domain/feedback/repository/feedback-repository";
