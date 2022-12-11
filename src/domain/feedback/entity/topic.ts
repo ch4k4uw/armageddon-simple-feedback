@@ -1,4 +1,7 @@
 export class Topic {
+    private _expires: Date;
+    private _created: Date;
+    private _updated: Date;
     constructor(
         public id: string = "",
         public code: string = "",
@@ -6,12 +9,28 @@ export class Topic {
         public description: string = "",
         public author: string = "",
         public authorName: string = "",
-        public expires: Date = new Date(0),
-        public created: Date = new Date(0),
-        public updated: Date = new Date(0),
-    ) { }
+        expires: Date = new Date(0),
+        created: Date = new Date(0),
+        updated: Date = new Date(0),
+    ) { 
+        this._expires = expires;
+        this._created = created;
+        this._updated = updated;
+    }
 
     static readonly empty = new Topic();
+
+    get expires() {
+        return new Date(this._expires.getTime());
+    }
+    
+    get created() {
+        return new Date(this._created.getTime());
+    }
+    
+    get updated() {
+        return new Date(this._updated.getTime());
+    }
 
     get isExpired(): boolean {
         return this.expires !== null && this.expires < (new Date());

@@ -1,4 +1,5 @@
 import { Role } from "../../../domain/credential/data/role";
+import { TopicNotFoundError } from "../../../domain/feedback/data/topic-not-found-error";
 import { Topic } from "../../../domain/feedback/entity/topic";
 import { ITopicRepository } from "../../../domain/feedback/repository/topic-repository";
 import { JwToken } from "../../../domain/token/data/jw-token";
@@ -13,6 +14,10 @@ export class FindTopicByIdApp extends AccessTokenAssertionApp {
 
     async find(token: JwToken, id: string): Promise<Topic> {
         this.assertToken(token);
-        return await this.topicRepository.findById(id);
+        const result = await this.topicRepository.findById(id);
+        if (result === Topic.empty) {
+            throw new TopicNotFoundError();
+        }
+        return result;
     }
 }

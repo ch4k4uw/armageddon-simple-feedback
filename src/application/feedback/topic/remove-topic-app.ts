@@ -6,9 +6,10 @@ import { JwToken } from "../../../domain/token/data/jw-token";
 import { AccessTokenAssertionApp } from "../common/access-token-assertion-app";
 
 export class RemoveTopicApp extends AccessTokenAssertionApp {
-    constructor(private topicRepository: ITopicCmdRepository) { 
+    constructor(private topicRepository: ITopicCmdRepository) {
         super([Role.admin]);
     }
+
     async remove(token: JwToken, id: string): Promise<Topic> {
         this.assertToken(token);
         const result = await this.topicRepository.delete(id);

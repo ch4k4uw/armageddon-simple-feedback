@@ -7,9 +7,10 @@ import { AccessTokenAssertionApp } from "../common/access-token-assertion-app";
 import { TopicRegistration } from "./data/topic-registration";
 
 export class RegisterTopicApp extends AccessTokenAssertionApp {
-    constructor(private topicRepository: ITopicCmdRepository) { 
+    constructor(private topicRepository: ITopicCmdRepository) {
         super([Role.admin]);
     }
+
     async register(token: JwToken, topic: TopicRegistration): Promise<Topic> {
         this.assertToken(token);
         const domainTopic = new Topic(
