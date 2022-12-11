@@ -3,8 +3,6 @@ import { RegisterFeedbackApp } from "../../../../src/application/feedback/feedba
 import { RatingOutOfRangeError } from "../../../../src/domain/feedback/data/rating-out-of-range-error";
 import { ReasonLengthOverflow } from "../../../../src/domain/feedback/data/reason-length-overflow-error";
 import { IFeedbackCmdRepository } from "../../../../src/domain/feedback/repository/feedback-cmd-repository";
-import { ExpiredAccessTokenError } from "../../../../src/domain/token/data/expired-access-token-error";
-import { InvalidAccessTokenError } from "../../../../src/domain/token/data/invalid-access-token-error";
 import { reject } from "../../../util/framework";
 import { FeedbackFixture } from "./stuff/feedback-fixture";
 

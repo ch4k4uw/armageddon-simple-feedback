@@ -97,6 +97,14 @@ export namespace TopicFixture {
             return new FeedbackQuery("a1", 10, 1);
         }
 
+        static get invalidPageSizeTopicQuery() {
+            return new FeedbackQuery("a1", -10, 1);
+        }
+
+        static get invalidPageIndexTopicQuery() {
+            return new FeedbackQuery("a1", 10, -1);
+        }
+
         static get successTopicPage() {
             return Common.topicPage1;
         }
