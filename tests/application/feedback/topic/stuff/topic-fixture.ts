@@ -69,11 +69,12 @@ export namespace TopicFixture {
         }
 
         static get topicPage1() {
+            const arrResult = [this.topic1, this.topic2, this.topic3];
             return new TopicPage(
-                [this.topic1, this.topic2, this.topic3],
+                arrResult,
                 10,
                 1,
-                3
+                arrResult.length
             );
         }
     }
@@ -313,41 +314,41 @@ export namespace TopicFixture {
         }
     }
 
-    export function setupTopicRepository(topicRepository: ITopicRepository): void;
-    export function setupTopicRepository(topicRepository: ITopicCmdRepository): void;
-    export function setupTopicRepository(topicRepository: ITopicCmdRepository | ITopicRepository): void {
+    export function setupTopicRepository(repository: ITopicRepository): void;
+    export function setupTopicRepository(repository: ITopicCmdRepository): void;
+    export function setupTopicRepository(repository: ITopicCmdRepository | ITopicRepository): void {
         when(
-            topicRepository.find(
+            repository.find(
                 Find.successTopicQuery.query,
                 anything(),
                 anything()
             )
         ).thenResolve(Find.successTopicPage);
         when(
-            topicRepository.findByCode(
+            repository.findByCode(
                 FindByCode.successCode,
             )
         ).thenResolve(FindByCode.successTopic);
         when(
-            topicRepository.findByCode(
+            repository.findByCode(
                 FindByCode.topicNotFoundCode,
             )
         ).thenResolve(Topic.empty);
-        when(topicRepository.findById(FindById.successId))
+        when(repository.findById(FindById.successId))
             .thenResolve(FindById.successTopic);
-        when(topicRepository.findById(FindById.topicNotFoundId))
+        when(repository.findById(FindById.topicNotFoundId))
             .thenResolve(Topic.empty);
-        when(topicRepository.findSummary(FindSummary.successId))
+        when(repository.findSummary(FindSummary.successId))
             .thenResolve(FindSummary.successTopic);
-        when(topicRepository.findSummary(FindSummary.topicNotFoundId))
+        when(repository.findSummary(FindSummary.topicNotFoundId))
             .thenResolve(TopicSummary.empty);
-        const topicCmdRepository = topicRepository as ITopicCmdRepository;
-        when(topicCmdRepository.insert(anything())).thenResolve(RegisterTopic.successTopic);
-        when(topicCmdRepository.delete(RemoveTopic.successTopicRemovalId))
+        const cmdRepository = repository as ITopicCmdRepository;
+        when(cmdRepository.insert(anything())).thenResolve(RegisterTopic.successTopic);
+        when(cmdRepository.delete(RemoveTopic.successTopicRemovalId))
             .thenResolve(RemoveTopic.successTopic);
-        when(topicCmdRepository.delete(RemoveTopic.topicNotFoundRemovalId))
+        when(cmdRepository.delete(RemoveTopic.topicNotFoundRemovalId))
             .thenResolve(Topic.empty);
-        when(topicCmdRepository.update(anything())).thenCall(async (...args: any[]) => {
+        when(cmdRepository.update(anything())).thenCall(async (...args: any[]) => {
             const arg1 = args[0] as Topic;
             switch(arg1.title) {
                 case UpdateTopic.successTopic.title:

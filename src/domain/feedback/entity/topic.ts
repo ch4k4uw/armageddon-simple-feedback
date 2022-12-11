@@ -3,12 +3,12 @@ export class Topic {
     private _created: Date;
     private _updated: Date;
     constructor(
-        public id: string = "",
-        public code: string = "",
-        public title: string = "",
-        public description: string = "",
-        public author: string = "",
-        public authorName: string = "",
+        public readonly id: string = "",
+        public readonly code: string = "",
+        public readonly title: string = "",
+        public readonly description: string = "",
+        public readonly author: string = "",
+        public readonly authorName: string = "",
         expires: Date = new Date(0),
         created: Date = new Date(0),
         updated: Date = new Date(0),

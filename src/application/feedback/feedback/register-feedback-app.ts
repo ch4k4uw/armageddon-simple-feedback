@@ -1,5 +1,5 @@
 import { FeedbackConstants } from "../../../domain/feedback/data/feedback-constants";
-import { InvalidRatingRangeError } from "../../../domain/feedback/data/invalid-rating-range-error";
+import { RatingOutOfRangeError } from "../../../domain/feedback/data/rating-out-of-range-error";
 import { ReasonLengthOverflow } from "../../../domain/feedback/data/reason-length-overflow-error";
 import { Feedback } from "../../../domain/feedback/entity/feedback";
 import { IFeedbackCmdRepository } from "../../../domain/feedback/repository/feedback-cmd-repository";
@@ -30,7 +30,7 @@ export class RegisterFeedbackApp {
 
     private assertRatingRange(rating: number) {
         if (rating < FeedbackConstants.minRatingValue || rating > FeedbackConstants.maxRatingValue) {
-            throw new InvalidRatingRangeError();
+            throw new RatingOutOfRangeError();
         }
     }
 }
