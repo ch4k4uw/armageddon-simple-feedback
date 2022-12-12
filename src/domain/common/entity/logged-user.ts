@@ -1,4 +1,5 @@
 import { Role } from "../../credential/data/role";
+import { User } from "./user";
 
 export class LoggedUser {
     constructor(
@@ -18,5 +19,9 @@ export class LoggedUser {
         name = name == undefined ? this.name : name;
         roles = roles == undefined ? this.roles : roles;
         return new LoggedUser(id, name, roles);
+    }
+
+    static create(user: User, roles: Role[]): LoggedUser {
+        return new LoggedUser(user.id, `${user.firstName} ${user.lastName}`, roles);
     }
 }
