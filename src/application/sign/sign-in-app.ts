@@ -5,7 +5,7 @@ import { IUserRepository } from "../../domain/common/repository/user-repository"
 import { Credential } from "../../domain/credential/data/credential";
 import { InvalidUserOrPasswordError } from "../../domain/credential/data/invalid-login-or-password-error";
 import { ICredentialRepository } from "../../domain/credential/repository/credential-repository";
-import { JwToken } from "../../domain/token/data/jw-token";
+import { JwToken } from "../../domain/token/entity/jw-token";
 import { RawJwToken } from "../../domain/token/data/raw-jw-token";
 import { IJwTokenCmdRepository } from "../../domain/token/repository/jw-token-cmd-repository";
 
@@ -37,7 +37,7 @@ export class SignInApp {
     }
 
     private async createRawToken(loggedUser: LoggedUser): Promise<RawJwToken> {
-        const jwToken = new JwToken(loggedUser, false, true);
+        const jwToken = new JwToken(undefined, loggedUser, false, true);
         return await this.jwTokenRepository.insert(jwToken);
     }
 

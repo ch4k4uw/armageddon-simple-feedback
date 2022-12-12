@@ -1,4 +1,4 @@
-import { JwToken } from "../../../../src/domain/token/data/jw-token";
+import { JwToken } from "../../../../src/domain/token/entity/jw-token";
 import { RawJwToken } from "../../../../src/domain/token/data/raw-jw-token";
 import { CommonFixture } from "../../common/stuff/common-fixture";
 
@@ -44,11 +44,11 @@ export namespace TokenFixture {
         }
 
         static get invalidJwToken(): JwToken {
-            return this.successJwToken.cloneWith(undefined, undefined, false);
+            return this.successJwToken.cloneWith(undefined, undefined, false, false);
         }
 
         static get expiredJwToken(): JwToken {
-            return this.successJwToken.cloneWith(undefined, true);
+            return this.successJwToken.cloneWith(undefined, undefined, true, true);
         }
     }
 }

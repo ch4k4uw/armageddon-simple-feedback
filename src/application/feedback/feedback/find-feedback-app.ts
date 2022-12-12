@@ -3,7 +3,7 @@ import { FeedbackPage } from "../../../domain/feedback/data/feedback-page";
 import { InvalidPageIndexError } from "../../../domain/feedback/data/invalid-page-index-error";
 import { InvalidPageSizeError } from "../../../domain/feedback/data/invalid-page-size-error";
 import { IFeedbackRepository } from "../../../domain/feedback/repository/feedback-repository";
-import { JwToken } from "../../../domain/token/data/jw-token";
+import { JwToken } from "../../../domain/token/entity/jw-token";
 import { AccessTokenAssertionApp } from "../common/access-token-assertion-app";
 import { FeedbackQuery } from "../common/data/feedback-query";
 

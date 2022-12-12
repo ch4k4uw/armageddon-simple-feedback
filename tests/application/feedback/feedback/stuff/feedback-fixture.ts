@@ -58,11 +58,11 @@ export namespace FeedbackFixture {
         }
         
         static get invalidAccessToken() {
-            return this.successAccessToken.cloneWith(undefined, false, false);
+            return this.successAccessToken.cloneWith(undefined, undefined, false, false);
         }
         
         static get expiredAccessToken() {
-            return this.successAccessToken.cloneWith(undefined, true, true);
+            return this.successAccessToken.cloneWith(undefined, undefined, true, true);
         }
     }
 

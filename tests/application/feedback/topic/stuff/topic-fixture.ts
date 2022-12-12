@@ -86,11 +86,11 @@ export namespace TopicFixture {
         }
 
         static get invalidAccessToken() {
-            return this.successAccessToken.cloneWith(undefined, false, false);
+            return this.successAccessToken.cloneWith(undefined, undefined, false, false);
         }
 
         static get expiredAccessToken() {
-            return this.successAccessToken.cloneWith(undefined, true);
+            return this.invalidAccessToken.cloneWith(undefined, undefined, true, true);
         }
 
         static get successTopicQuery() {
