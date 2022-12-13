@@ -1,5 +1,6 @@
 import { UserNotFoundError } from "../../../domain/common/data/user-not-found-error";
 import { LoggedUser } from "../../../domain/common/entity/logged-user";
+import { CredentialNotFoundError } from "../../../domain/credential/data/credential-not-found-error";
 import { InvalidRefreshTokenError } from "../../../domain/token/data/invalid-refresh-token-error";
 import { RawJwToken } from "../../../domain/token/data/raw-jw-token";
 import { JwToken } from "../../../domain/token/entity/jw-token";
@@ -9,11 +10,6 @@ import { JwRefreshTokenModel } from "../../database/model/jw-refresh-token-model
 import { IJwTokenService } from "../service/jw-token-service";
 import { JwAccessTokenPayloadModel } from "../service/model/jw-access-token-payload-model";
 import { JwRefreshTokenPayloadModel } from "../service/model/jw-refresh-token-payload-model";
-
-interface ITokens {
-    access: string;
-    refresh: string;
-}
 
 export class JwTokenCmdRepositoryImpl implements IJwTokenCmdRepository {
     constructor(
@@ -100,9 +96,15 @@ export class JwTokenCmdRepositoryImpl implements IJwTokenCmdRepository {
             throw new UserNotFoundError();
         }
 
-        //Must link credential with user to find the logged user roles
-        //return new JwToken(jwRefreshTokenModel.id, LoggedUser.create(userModel.asDomain))
-        throw new Error("Im progress...");
+        const credentialModel = await this.database.findCredentialByUserId(userModel.id);
+        if (credentialModel === null) {
+            throw new CredentialNotFoundError();
+        }
+
+        return new JwToken(
+            jwRefreshTokenModel.id, 
+            LoggedUser.create(userModel.asDomain, credentialModel.asDomain.roles)
+        );
     }
 
 }
