@@ -7,6 +7,9 @@
     "test": "jest"
   },
   "jest": {
+    "setupFilesAfterEnv": [
+      "<rootDir>/setup-jest.ts"
+    ],
     "transform": {
       ".(ts|tsx)": [
         "ts-jest",
