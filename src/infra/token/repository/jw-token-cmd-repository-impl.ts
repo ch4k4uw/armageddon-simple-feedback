@@ -1,6 +1,4 @@
 import { UserNotFoundError } from "../../../domain/common/data/user-not-found-error";
-import { LoggedUser } from "../../../domain/common/entity/logged-user";
-import { CredentialNotFoundError } from "../../../domain/credential/data/credential-not-found-error";
 import { InvalidRefreshTokenError } from "../../../domain/token/data/invalid-refresh-token-error";
 import { RawJwToken } from "../../../domain/token/data/raw-jw-token";
 import { JwToken } from "../../../domain/token/entity/jw-token";
@@ -86,24 +84,19 @@ export class JwTokenCmdRepositoryImpl implements IJwTokenCmdRepository {
     }
 
     async findRefreshTokenByRaw(raw: RawJwToken): Promise<JwToken> {
-        const token = await this.jwTokenSvc.verifyRefreshToken(raw.accessToken);
+        const token = await this.jwTokenSvc.verifyRefreshToken(raw.refreshToken);
         const jwRefreshTokenModel = await this.database.findJwRefreshToken(token.id);
         if (jwRefreshTokenModel === null || jwRefreshTokenModel.removed) {
             throw new InvalidRefreshTokenError();
         }
+
         const userModel = await this.database.findUserById(jwRefreshTokenModel.user.id);
         if (userModel === null) {
             throw new UserNotFoundError();
         }
 
-        const credentialModel = await this.database.findCredentialByUserId(userModel.id);
-        if (credentialModel === null) {
-            throw new CredentialNotFoundError();
-        }
-
         return new JwToken(
-            jwRefreshTokenModel.id, 
-            LoggedUser.create(userModel.asDomain, credentialModel.asDomain.roles)
+            jwRefreshTokenModel.id, token.loggedUser, false, true
         );
     }
 

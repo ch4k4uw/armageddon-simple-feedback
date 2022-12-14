@@ -6,7 +6,7 @@ export class JwRefreshTokenModel {
         public readonly user: UserModel = UserModel.empty,
         public readonly removed: boolean = false,
         public readonly created: number = 0,
-        public readonly updaed: number = 0,
+        public readonly updated: number = 0,
     ) { }
     
     get asRemoved() {
