@@ -1,4 +1,4 @@
-import { JwToken } from "../data/jw-token";
+import { JwToken } from "../entity/jw-token";
 import { RawJwToken } from "../data/raw-jw-token";
 import { IJwTokenRepository } from "./jw-token-repository";
 

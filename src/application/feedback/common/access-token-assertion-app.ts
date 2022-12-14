@@ -2,7 +2,7 @@ import { UserPrivilegeError } from "../../../domain/common/data/user-privilege-e
 import { Role } from "../../../domain/credential/data/role";
 import { ExpiredAccessTokenError } from "../../../domain/token/data/expired-access-token-error";
 import { InvalidAccessTokenError } from "../../../domain/token/data/invalid-access-token-error";
-import { JwToken } from "../../../domain/token/data/jw-token";
+import { JwToken } from "../../../domain/token/entity/jw-token";
 
 export class AccessTokenAssertionApp {
     constructor(private allowedRoles: Role[]) { }

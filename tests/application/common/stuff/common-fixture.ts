@@ -2,7 +2,7 @@ import { LoggedUser } from "../../../../src/domain/common/entity/logged-user";
 import { User } from "../../../../src/domain/common/entity/user";
 import { Credential } from "../../../../src/domain/credential/data/credential";
 import { Role } from "../../../../src/domain/credential/data/role";
-import { JwToken } from "../../../../src/domain/token/data/jw-token";
+import { JwToken } from "../../../../src/domain/token/entity/jw-token";
 import { RawJwToken } from "../../../../src/domain/token/data/raw-jw-token";
 
 export class CommonFixture {
@@ -51,6 +51,6 @@ export class CommonFixture {
     }
 
     static get jwToken1(): JwToken {
-        return new JwToken(this.loggedUser1, false, true);
+        return new JwToken("a1", this.loggedUser1, false, true);
     }
 }

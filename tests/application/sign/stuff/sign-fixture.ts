@@ -2,7 +2,7 @@ import { LoggedUser } from "../../../../src/domain/common/entity/logged-user";
 import { User } from "../../../../src/domain/common/entity/user"
 import { Credential } from "../../../../src/domain/credential/data/credential"
 import { Role } from "../../../../src/domain/credential/data/role"
-import { JwToken } from "../../../../src/domain/token/data/jw-token";
+import { JwToken } from "../../../../src/domain/token/entity/jw-token";
 import { RawJwToken } from "../../../../src/domain/token/data/raw-jw-token";
 import { CommonFixture } from "../../common/stuff/common-fixture";
 
@@ -64,7 +64,7 @@ export namespace SignFixture {
         }
 
         static get invalidAccessTokenJwToken(): JwToken {
-            return new JwToken(this.loggedUser3, true, true);
+            return CommonFixture.jwToken1.cloneWith(undefined, this.loggedUser3, true, true);
         }
 
         static get successRawToken(): RawJwToken {
@@ -87,11 +87,11 @@ export namespace SignFixture {
         }
 
         static get invalidJwToken(): JwToken {
-            return new JwToken(SignIn.successLoggedUser, false, false);
+            return CommonFixture.jwToken1.cloneWith(undefined, SignIn.successLoggedUser, false, false);
         }
 
         static get expiredJwToken(): JwToken {
-            return new JwToken(SignIn.successLoggedUser, true, true);
+            return this.invalidJwToken.cloneWith(undefined, undefined, true, true);
         }
     }
 }

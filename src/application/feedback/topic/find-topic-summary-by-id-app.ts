@@ -2,7 +2,7 @@ import { Role } from "../../../domain/credential/data/role";
 import { TopicNotFoundError } from "../../../domain/feedback/data/topic-not-found-error";
 import { TopicSummary } from "../../../domain/feedback/data/topic-summary";
 import { ITopicRepository } from "../../../domain/feedback/repository/topic-repository";
-import { JwToken } from "../../../domain/token/data/jw-token";
+import { JwToken } from "../../../domain/token/entity/jw-token";
 import { AccessTokenAssertionApp } from "../common/access-token-assertion-app";
 
 export class FindTopicSummaryByIdApp extends AccessTokenAssertionApp {

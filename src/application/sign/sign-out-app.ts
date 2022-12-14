@@ -1,6 +1,6 @@
 import { ExpiredRefreshTokenError } from "../../domain/token/data/expired-refresh-token-error";
 import { InvalidRefreshTokenError } from "../../domain/token/data/invalid-refresh-token-error";
-import { JwToken } from "../../domain/token/data/jw-token";
+import { JwToken } from "../../domain/token/entity/jw-token";
 import { IJwTokenCmdRepository } from "../../domain/token/repository/jw-token-cmd-repository";
 
 export class SignOutApp {

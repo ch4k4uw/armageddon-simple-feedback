@@ -3,7 +3,7 @@ import { ExpiredTopicError } from "../../../domain/feedback/data/expired-topic-e
 import { TopicNotFoundError } from "../../../domain/feedback/data/topic-not-found-error";
 import { Topic } from "../../../domain/feedback/entity/topic";
 import { ITopicCmdRepository } from "../../../domain/feedback/repository/topic-cmd-repository";
-import { JwToken } from "../../../domain/token/data/jw-token";
+import { JwToken } from "../../../domain/token/entity/jw-token";
 import { AccessTokenAssertionApp } from "../common/access-token-assertion-app";
 import { TopicUpdate } from "./data/topic-update";
 
