@@ -22,6 +22,7 @@ describe('Find feedback tests', () => {
     test('should find some feedback', async () => {
         const result = await svc.find(
             FeedbackFixture.Find.successAccessToken,
+            "",
             FeedbackFixture.Find.successFeedbackQuery,
         );
         expect(result).toEqual({ ...FeedbackFixture.Find.successFeedbackPage });
@@ -31,6 +32,7 @@ describe('Find feedback tests', () => {
     reject('should reject with invalid page size error', async () => {
         await svc.find(
             FeedbackFixture.Find.successAccessToken,
+            "",
             FeedbackFixture.Find.invalidPageSizeFeedbackQuery,
         );
     }, (err) => {
@@ -40,6 +42,7 @@ describe('Find feedback tests', () => {
     reject('should reject with invalid page index error', async () => {
         await svc.find(
             FeedbackFixture.Find.successAccessToken,
+            "",
             FeedbackFixture.Find.invalidPageIndexFeedbackQuery,
         );
     }, (err) => {
@@ -49,6 +52,7 @@ describe('Find feedback tests', () => {
     reject('should reject with invalid access token error', async () => {
         await svc.find(
             FeedbackFixture.Find.invalidAccessToken,
+            "",
             FeedbackFixture.Find.successFeedbackQuery,
         );
     }, (err) => {
@@ -58,6 +62,7 @@ describe('Find feedback tests', () => {
     reject('should reject with expired access token error', async () => {
         await svc.find(
             FeedbackFixture.Find.expiredAccessToken,
+            "",
             FeedbackFixture.Find.successFeedbackQuery,
         );
     }, (err) => {
