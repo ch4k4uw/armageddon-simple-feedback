@@ -23,7 +23,7 @@ export class JwTokenCmdRepositoryImpl implements IJwTokenCmdRepository {
         if (userModel === null) {
             throw new UserNotFoundError();
         }
-        const now = Date.now();
+        const now = this.database.dateTime;
         const tokenModel = new JwRefreshTokenModel(
             id, userModel, false, now, now
         );
@@ -61,12 +61,12 @@ export class JwTokenCmdRepositoryImpl implements IJwTokenCmdRepository {
             throw new UserNotFoundError();
         }
 
-        const now = Date.now();
+        const now = this.database.dateTime;
         const newTokenModel = new JwRefreshTokenModel(id, userModel, false, jwRefreshTokenModel.created, now);
-        const oldTokenModel = jwRefreshTokenModel.asRemoved;
+        const oldTokenModel = jwRefreshTokenModel.toRemoved(now);
 
         await this.database.insertAndUpdateRefreshToken(newTokenModel, oldTokenModel);
-        
+
         return result;
     }
 
@@ -75,7 +75,9 @@ export class JwTokenCmdRepositoryImpl implements IJwTokenCmdRepository {
         if (jwRefreshTokenModel === null || jwRefreshTokenModel.removed) {
             throw new InvalidRefreshTokenError();
         }
-        await this.database.updateJwRefreshToken(jwRefreshTokenModel.asRemoved);
+        await this.database.updateJwRefreshToken(
+            jwRefreshTokenModel.toRemoved(this.database.dateTime)
+        );
     }
 
     async findAccessTokenByRaw(raw: RawJwToken): Promise<JwToken> {

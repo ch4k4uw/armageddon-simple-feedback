@@ -4,4 +4,5 @@ import { IUserDatabase } from "./user-database"
 
 export interface IDatabase extends IJwTokenDatabase, IUserDatabase, ICredentialDatabase {
     createId(): Promise<string>;
+    readonly dateTime: number;
 }

@@ -139,7 +139,7 @@ export namespace FeedbackFixture {
     export function setupFeedbackRepository(repository: IFeedbackRepository): void;
     export function setupFeedbackRepository(repository: IFeedbackCmdRepository): void;
     export function setupFeedbackRepository(repository: IFeedbackCmdRepository | IFeedbackRepository): void {
-        when(repository.find(anyString(), anyNumber(), anyNumber())).thenResolve(Find.successFeedbackPage);
+        when(repository.find(anyString(), anyString(), anyNumber(), anyNumber())).thenResolve(Find.successFeedbackPage);
         when(repository.findById(FindById.successFeedbackId)).thenResolve(FindById.successFeedback);
         when(repository.findById(FindById.notFoundFeedbackId)).thenResolve(Feedback.empty);
         const cmdRepository = repository as IFeedbackCmdRepository;
