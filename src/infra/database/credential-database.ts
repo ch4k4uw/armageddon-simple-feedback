@@ -1,5 +1,5 @@
 import { CredentialModel } from "./model/credential-model";
 
 export interface ICredentialDatabase {
-    findCredentialByUserId(login: string): Promise<CredentialModel>;
+    findCredentialByLogin(login: string): Promise<CredentialModel>;
 }
