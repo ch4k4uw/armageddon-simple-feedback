@@ -1,3 +1,4 @@
+import { ExpiredTopicError } from "../../../domain/feedback/data/expired-topic-error";
 import { FeedbackPage } from "../../../domain/feedback/data/feedback-page";
 import { TopicNotFoundError } from "../../../domain/feedback/data/topic-not-found-error";
 import { Feedback } from "../../../domain/feedback/entity/feedback";
@@ -26,16 +27,19 @@ export class FeedbackCmdRepositoryImpl implements IFeedbackCmdRepository {
         return feedbackModel.asDomain;
     }
 
-    private async assertTopic(id: string): Promise<TopicModel> {
+    private async assertTopic(id: string, assertExpiration: boolean = true): Promise<TopicModel> {
         const result = await this.database.findTopicById(id);
-        if (result === null) {
+        if (result == null) {
             throw new TopicNotFoundError();
+        }
+        if (assertExpiration && result.asDomain.isExpired) {
+            throw new ExpiredTopicError();
         }
         return result;
     }
 
     async find(topic: string, query?: string, size?: number, index?: number): Promise<FeedbackPage> {
-        await this.assertTopic(topic);
+        await this.assertTopic(topic, false);
         const pageModel = await this.database.findFeedbackPage(
             topic,
             index || FeedbackInfraConstants.pageIndex,
@@ -54,7 +58,7 @@ export class FeedbackCmdRepositoryImpl implements IFeedbackCmdRepository {
 
     async findById(id: string): Promise<Feedback> {
         const feedbakModel = await this.database.findFeedbackById(id);
-        if (feedbakModel === null) {
+        if (feedbakModel == null) {
             return Feedback.empty;
         }
         return feedbakModel.asDomain;
