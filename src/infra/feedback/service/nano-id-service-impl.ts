@@ -1,11 +1,21 @@
 import { INanoIdService } from "./nano-id-service";
-import * as Nanoid from 'nanoid';
+import { customAlphabet } from 'nanoid';
 
-const NanoIdLen = +(process.env.ARMAGEDDON_NANOID_LEN as string) || 16;
-const customNanoid = Nanoid.customAlphabet('ABCDEFGHIJKLMNOPQRSUVWXYZabcdefghijklmnopqrsuvwxyz0123456789', NanoIdLen);
+const customNanoId = (() => {
+    let customNanoId: () => string;
+    let result = function(): string {
+        if (customNanoId == undefined) {
+            const nanoIdLen = +(process.env.ARMAGEDDON_NANOID_LEN as string) || 16;
+            customNanoId = customAlphabet('ABCDEFGHIJKLMNOPQRSUVWXYZabcdefghijklmnopqrsuvwxyz0123456789', nanoIdLen);
+        }
+        return customNanoId();
+    };
+    return result;
+})();
 
 export class NanoIdServiceImpl implements INanoIdService {
+    constructor() { }
     async createId(): Promise<string> {
-        return customNanoid();
+        return customNanoId();
     }
 }
