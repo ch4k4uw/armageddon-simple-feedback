@@ -36,7 +36,7 @@ export class TopicCmdRepositoryImpl implements ITopicCmdRepository {
         return topicModel.asDomain;
     }
 
-    async findFreeNanoCode(): Promise<string> {
+    private async findFreeNanoCode(): Promise<string> {
         const svc = this.nanoIdSvc;
         const db = this.database;
         async function tryNextCode(): Promise<string> {
@@ -52,6 +52,10 @@ export class TopicCmdRepositoryImpl implements ITopicCmdRepository {
     }
 
     async update(topic: Topic): Promise<Topic> {
+        const existentTopic = await this.findById(topic.id);
+        if (existentTopic === Topic.empty) {
+            return Topic.empty;
+        }
         const topicModel = new TopicModel(
             topic.id,
             topic.code,
@@ -60,7 +64,7 @@ export class TopicCmdRepositoryImpl implements ITopicCmdRepository {
             topic.author,
             topic.authorName,
             topic.expires.getTime(),
-            topic.created.getTime(),
+            existentTopic.created.getTime(),
             this.database.dateTime,
         );
         await this.database.updateTopic(topicModel);
@@ -75,7 +79,7 @@ export class TopicCmdRepositoryImpl implements ITopicCmdRepository {
         await this.database.removeTopicById(id);
         return topicModel.asDomain;
     }
- 
+
     async find(query?: string, size?: number, index?: number): Promise<TopicPage> {
         const topicPageModel = await this.database.findTopicPage(
             index || FeedbackInfraConstants.pageIndex,
@@ -92,7 +96,7 @@ export class TopicCmdRepositoryImpl implements ITopicCmdRepository {
             topicPageModel.total,
         );
     }
- 
+
     async findById(id: string): Promise<Topic> {
         const result = await this.database.findTopicById(id);
         if (result === null) {
@@ -100,7 +104,7 @@ export class TopicCmdRepositoryImpl implements ITopicCmdRepository {
         }
         return result.asDomain;
     }
- 
+
     async findByCode(code: string): Promise<Topic> {
         const result = await this.database.findTopicByCode(code);
         if (result === null) {
@@ -108,7 +112,7 @@ export class TopicCmdRepositoryImpl implements ITopicCmdRepository {
         }
         return result.asDomain;
     }
- 
+
     async findSummary(id: string): Promise<TopicSummary> {
         const topic = await this.findById(id);
         if (topic === Topic.empty) {
@@ -124,13 +128,13 @@ export class TopicCmdRepositoryImpl implements ITopicCmdRepository {
             return prev;
         }, {
             topic: topic,
-            expiresIn: (topic.expires.getTime() - Date.now()) / (1000*3600*24),
+            expiresIn: Math.round((topic.expires.getTime() - Date.now()) / (1000 * 3600 * 24)),
             ratingSum: 0,
             ratingHigh: FeedbackConstants.minRatingValue,
             ratingLow: FeedbackConstants.maxRatingValue,
             answers: feedbackSummariesModel.length,
         });
-        
+
         return new TopicSummary(
             summary.topic,
             summary.expiresIn,

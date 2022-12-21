@@ -76,20 +76,24 @@ export namespace CommonFeedbackFixture {
             return this.feedback.value[0];
         }
 
+        static get feedbackList() {
+            return this.feedback.value;
+        }
+
         static get feedback2() {
-            return this.feedback.value[1];
+            return this.feedbackList[1];
         }
 
         static get feedback3() {
-            return this.feedback.value[2];
+            return this.feedbackList[2];
         }
 
         static get feedback11() {
-            return this.feedback.value[10];
+            return this.feedbackList[10];
         }
 
         static get feedback21() {
-            return this.feedback.value[20];
+            return this.feedbackList[20];
         }
     }
 }
