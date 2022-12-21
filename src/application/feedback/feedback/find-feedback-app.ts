@@ -14,10 +14,10 @@ export class FindFeedbackApp extends AccessTokenAssertionApp {
         super([Role.admin]);
     }
 
-    async find(token: JwToken, query: FeedbackQuery): Promise<FeedbackPage> {
+    async find(token: JwToken, topic: string, query: FeedbackQuery): Promise<FeedbackPage> {
         this.assertToken(token);
         this.assertQuery(query);
-        return await this.feedbackRepository.find(query.query, query.size, query.index);
+        return await this.feedbackRepository.find(topic, query.query, query.size, query.index);
     }
 
     private assertQuery(query: FeedbackQuery) {

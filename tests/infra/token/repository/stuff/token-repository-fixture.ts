@@ -18,6 +18,9 @@ export namespace TokenRepositoryFixture {
         let database = mock<IDatabase>();
 
         when(database.createId()).thenCall(async () => nextId());
+        when(database.dateTime).thenCall(() => {
+            return Date.now();
+        });
 
         when(database.findUserById(Insert.Success.user.id))
             .thenResolve(Insert.Success.userModel);
@@ -321,7 +324,7 @@ export namespace TokenRepositoryFixture {
             }
 
             static get removedJwRefreshToken() {
-                return this.jwRefreshToken.asRemoved;
+                return this.jwRefreshToken.toRemoved(this.date);
             }
 
             static get userModel() {

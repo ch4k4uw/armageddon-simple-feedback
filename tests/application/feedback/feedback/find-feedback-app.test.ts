@@ -1,4 +1,4 @@
-import { anyNumber, anything, instance, mock, verify } from "ts-mockito";
+import { anyNumber, anyString, anything, instance, mock, verify } from "ts-mockito";
 import { FindFeedbackApp } from "../../../../src/application/feedback/feedback/find-feedback-app";
 import { InvalidPageIndexError } from "../../../../src/domain/feedback/data/invalid-page-index-error";
 import { InvalidPageSizeError } from "../../../../src/domain/feedback/data/invalid-page-size-error";
@@ -22,15 +22,17 @@ describe('Find feedback tests', () => {
     test('should find some feedback', async () => {
         const result = await svc.find(
             FeedbackFixture.Find.successAccessToken,
+            "",
             FeedbackFixture.Find.successFeedbackQuery,
         );
         expect(result).toEqual({ ...FeedbackFixture.Find.successFeedbackPage });
-        verify(feedbackRepository.find(anything(), anyNumber(), anyNumber())).once();
+        verify(feedbackRepository.find(anyString(), anyString(), anyNumber(), anyNumber())).once();
     });
 
     reject('should reject with invalid page size error', async () => {
         await svc.find(
             FeedbackFixture.Find.successAccessToken,
+            "",
             FeedbackFixture.Find.invalidPageSizeFeedbackQuery,
         );
     }, (err) => {
@@ -40,6 +42,7 @@ describe('Find feedback tests', () => {
     reject('should reject with invalid page index error', async () => {
         await svc.find(
             FeedbackFixture.Find.successAccessToken,
+            "",
             FeedbackFixture.Find.invalidPageIndexFeedbackQuery,
         );
     }, (err) => {
@@ -49,6 +52,7 @@ describe('Find feedback tests', () => {
     reject('should reject with invalid access token error', async () => {
         await svc.find(
             FeedbackFixture.Find.invalidAccessToken,
+            "",
             FeedbackFixture.Find.successFeedbackQuery,
         );
     }, (err) => {
@@ -58,6 +62,7 @@ describe('Find feedback tests', () => {
     reject('should reject with expired access token error', async () => {
         await svc.find(
             FeedbackFixture.Find.expiredAccessToken,
+            "",
             FeedbackFixture.Find.successFeedbackQuery,
         );
     }, (err) => {

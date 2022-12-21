@@ -14,11 +14,12 @@
       ".(ts|tsx)": [
         "ts-jest",
         {
-          "compiler": "ttypescript"
+          "compiler": "ttypescript",
+          "useESM": true
         }
       ]
     },
-    "testRegex": "(/__tests__/.*|\\.(test))\\.(ts|tsx)$",
+    "testRegex": "(/__tests__/.*|\\.(test))\\.(ts|tsx|js)$",
     "moduleFileExtensions": [
       "ts",
       "tsx",
@@ -45,6 +46,8 @@
     "typescript": "^4.9.3"
   },
   "dependencies": {
-    "jsonwebtoken": "^8.5.1"
-  }
+    "jsonwebtoken": "^8.5.1",
+    "nanoid": "^3.3.4"
+  },
+  "type": "module"
 }

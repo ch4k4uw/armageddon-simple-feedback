@@ -9,5 +9,6 @@ beforeEach(() => {
         ARMAGEDDON_REFRESH_TOKEN_EXPIRATION: '7 days',
         ARMAGEDDON_RND_BYTES_SZ: '16',
         ARMAGEDDON_DERIVED_KEY_LEN: '24',
+        ARMAGEDDON_NANOID_LEN: '8',
     }
 });

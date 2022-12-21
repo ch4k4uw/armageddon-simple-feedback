@@ -8,14 +8,14 @@ export class JwRefreshTokenModel {
         public readonly created: number = 0,
         public readonly updated: number = 0,
     ) { }
-    
-    get asRemoved() {
+
+    toRemoved(currDate: number) {
         return new JwRefreshTokenModel(
             this.id,
             this.user,
             true,
             this.created,
-            Date.now()
+            currDate,
         );
     }
 }
