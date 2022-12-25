@@ -1,59 +1,61 @@
 {
-  "name": "armageddon-simple-feedback",
-  "version": "1.0.0",
-  "description": "Feedback backend app for non complex usages.",
-  "main": "index.js",
-  "scripts": {
-    "test": "jest"
-  },
-  "jest": {
-    "setupFilesAfterEnv": [
-      "<rootDir>/setup-jest.ts"
-    ],
-    "transform": {
-      ".(ts|tsx)": [
-        "ts-jest",
-        {
-          "compiler": "ttypescript",
-          "useESM": true
-        }
+   "name": "armageddon-simple-feedback",
+   "version": "1.0.0",
+   "description": "Feedback backend app for non complex usages.",
+   "main": "index.js",
+   "scripts": {
+      "test": "jest",
+      "migration:generate": "typeorm-ts-node-esm -d ./src/data-source.ts migration:generate ./src/infra/database/orm/migrations/default",
+      "migration:run": "typeorm-ts-node-esm -d ./src/data-source.ts migration:run"
+   },
+   "jest": {
+      "setupFilesAfterEnv": [
+         "<rootDir>/setup-jest.ts"
+      ],
+      "transform": {
+         ".(ts|tsx)": [
+            "ts-jest",
+            {
+               "compiler": "ttypescript",
+               "useESM": true
+            }
+         ]
+      },
+      "testRegex": "(/__tests__/.*|\\.(test))\\.(ts|tsx|js)$",
+      "moduleFileExtensions": [
+         "ts",
+         "tsx",
+         "js",
+         "json"
+      ],
+      "verbose": true,
+      "collectCoverageFrom": [
+         "src/**/*.{ts,tsx,js,jsx}",
+         "!src/**/*.d.ts"
       ]
-    },
-    "testRegex": "(/__tests__/.*|\\.(test))\\.(ts|tsx|js)$",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "json"
-    ],
-    "verbose": true,
-    "collectCoverageFrom": [
-      "src/**/*.{ts,tsx,js,jsx}",
-      "!src/**/*.d.ts"
-    ]
-  },
-  "author": "Pedro Motta",
-  "license": "ISC",
-  "devDependencies": {
-    "@types/jest": "^29.2.4",
-    "@types/jsonwebtoken": "^8.5.9",
-    "@types/node": "^18.11.10",
-    "@types/uuid": "^9.0.0",
-    "nodemon": "^2.0.20",
-    "ts-jest": "^29.0.3",
-    "ts-mockito": "^2.6.1",
-    "ts-node": "^10.9.1",
-    "ttypescript": "^1.5.13",
-    "typescript": "^4.9.3"
-  },
-  "dependencies": {
-    "jsonwebtoken": "^9.0.0",
-    "nanoid": "^3.3.4",
-    "reflect-metadata": "^0.1.13",
-    "sqlite3": "^5.1.4",
-    "typeorm": "^0.3.11",
-    "typeorm-extension": "^2.4.0",
-    "uuid": "^9.0.0"
-  },
-  "type": "module"
+   },
+   "author": "Pedro Motta",
+   "license": "ISC",
+   "devDependencies": {
+      "@types/jest": "^29.2.4",
+      "@types/jsonwebtoken": "^8.5.9",
+      "@types/node": "^16.11.10",
+      "@types/uuid": "^9.0.0",
+      "nodemon": "^2.0.20",
+      "ts-jest": "^29.0.3",
+      "ts-mockito": "^2.6.1",
+      "ts-node": "^10.9.1",
+      "ttypescript": "^1.5.13",
+      "typescript": "4.5.2"
+   },
+   "dependencies": {
+      "jsonwebtoken": "^9.0.0",
+      "nanoid": "^3.3.4",
+      "path": "^0.12.7",
+      "reflect-metadata": "^0.1.13",
+      "sqlite3": "^5.1.4",
+      "typeorm": "0.3.11",
+      "typeorm-extension": "^2.4.0",
+      "uuid": "^9.0.0"
+   }
 }
