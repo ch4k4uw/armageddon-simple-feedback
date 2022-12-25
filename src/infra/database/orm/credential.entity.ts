@@ -3,6 +3,8 @@ import { UserEntity } from "./user.entity";
 
 @Entity("credential")
 export class CredentialEntity {
+    static readonly ROLE_ADMIN = 1;
+
     @PrimaryColumn("text")
     userId: string;
 
@@ -12,6 +14,9 @@ export class CredentialEntity {
 
     @Column("text")
     login: string;
+
+    @Column("text")
+    password: string;
 
     @Column("integer")
     role: number;
