@@ -51,7 +51,7 @@ export class JwTokenCmdRepositoryImpl implements IJwTokenCmdRepository {
         const id = await this.database.createId();
         const result = this.createTokens(id, token);
 
-        const jwRefreshTokenModel = await this.database.findJwRefreshToken(token.id);
+        const jwRefreshTokenModel = await this.database.findJwRefreshTokenById(token.id);
         if (jwRefreshTokenModel === null || jwRefreshTokenModel.removed) {
             throw new InvalidRefreshTokenError();
         }
@@ -71,7 +71,7 @@ export class JwTokenCmdRepositoryImpl implements IJwTokenCmdRepository {
     }
 
     async removeRefreshToken(token: JwToken): Promise<void> {
-        const jwRefreshTokenModel = await this.database.findJwRefreshToken(token.id);
+        const jwRefreshTokenModel = await this.database.findJwRefreshTokenById(token.id);
         if (jwRefreshTokenModel === null || jwRefreshTokenModel.removed) {
             throw new InvalidRefreshTokenError();
         }
@@ -87,7 +87,7 @@ export class JwTokenCmdRepositoryImpl implements IJwTokenCmdRepository {
 
     async findRefreshTokenByRaw(raw: RawJwToken): Promise<JwToken> {
         const token = await this.jwTokenSvc.verifyRefreshToken(raw.refreshToken);
-        const jwRefreshTokenModel = await this.database.findJwRefreshToken(token.id);
+        const jwRefreshTokenModel = await this.database.findJwRefreshTokenById(token.id);
         if (jwRefreshTokenModel === null || jwRefreshTokenModel.removed) {
             throw new InvalidRefreshTokenError();
         }

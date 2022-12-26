@@ -41,7 +41,7 @@ export class DatabaseImpl implements IDatabase {
         });
     }
 
-    async findJwRefreshToken(id: string): Promise<JwRefreshTokenModel | null> {
+    async findJwRefreshTokenById(id: string): Promise<JwRefreshTokenModel | null> {
         const rawResult = await this.dataSource.getRepository(JwRefreshTokenEntity)
             .findOne({
                 where: { id },
