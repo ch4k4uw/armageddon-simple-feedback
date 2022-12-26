@@ -36,12 +36,8 @@ export class DatabaseImpl implements IDatabase {
     async insertAndUpdateRefreshToken(insert: JwRefreshTokenModel, update: JwRefreshTokenModel): Promise<void> {
         await this.dataSource.transaction(async (em) => {
             const repo = em.getRepository(JwRefreshTokenEntity);
-            const existent = await repo.findOneBy({ id: update.id });
-            if (existent == null) {
-                throw new Error('token not exists');
-            }
-            await repo.update({ id: update.id }, update);
-            await repo.insert(repo.create(insert));
+            await repo.update({ id: update.id }, jwRefreshTokenModelToEntity(update));
+            await repo.save(repo.create(jwRefreshTokenModelToEntity(insert)));
         });
     }
 
