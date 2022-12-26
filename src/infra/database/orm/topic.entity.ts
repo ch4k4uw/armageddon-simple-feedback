@@ -1,7 +1,8 @@
-import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
+import { Column, Entity, Index, OneToMany, PrimaryColumn } from "typeorm";
 import { FeedbackEntity } from "./feedback.entity";
 
 @Entity("topic")
+@Index(["lowerTitle", "lowerDescription"])
 export class TopicEntity {
     @PrimaryColumn("text")
     id: string;
@@ -13,7 +14,15 @@ export class TopicEntity {
     title: string;
 
     @Column("text")
+    @Index()
+    lowerTitle: string;
+
+    @Column("text")
     description: string;
+
+    @Column("text")
+    @Index()
+    lowerDescription: string;
 
     @Column("text")
     author: string;

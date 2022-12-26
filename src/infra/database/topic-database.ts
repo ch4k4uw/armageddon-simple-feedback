@@ -10,9 +10,9 @@ export interface ITopicDatabase {
     insertTopic(topic: TopicModel): Promise<void>;
     updateTopic(topic: TopicModel): Promise<void>;
     removeTopicById(id: string): Promise<void>;
-    findTopicById(id: string): Promise<TopicModel>;
-    findTopicByCode(code: string): Promise<TopicModel>;
+    findTopicById(id: string): Promise<TopicModel|null>;
+    findTopicByCode(code: string): Promise<TopicModel|null>;
     findTopicExistsByTitle(title: string): Promise<boolean>;
     findTopicCodeExists(code: string): Promise<boolean>;
-    findTopicPage(index: number, size: number, options?: ITopicQueryOptions): Promise<PagedModel<TopicModel>>;
+    findTopicPage(index: number, size: number, options?: ITopicQueryOptions): Promise<PagedModel<TopicModel|null>>;
 }
