@@ -1,12 +1,13 @@
 import { anything, capture, instance, mock, verify, when } from "ts-mockito";
 import { IDatabase } from "../../../src/infra/database/database";
 import * as Uuid from "uuid";
-import { DataSource, EntityManager, Repository } from "typeorm";
+import { DataSource, EntityManager, FindOneOptions, Repository, FindOptionsWhere } from "typeorm";
 import { DatabaseImpl } from "../../../src/infra/database/database-impl";
 import { JwRefreshTokenEntity } from "../../../src/infra/database/orm/jw-refresh-token.entity";
 import { JwRefreshTokenModel } from "../../../src/infra/database/model/jw-refresh-token-model";
 import { UserModel } from "../../../src/infra/database/model/user-model";
 import { UserEntity } from "../../../src/infra/database/orm/user.entity";
+import { also } from "../../../src/domain/common/service/also";
 
 namespace DatabaseFixture {
     class Common {
@@ -25,11 +26,6 @@ namespace DatabaseFixture {
                 e.updated = this.userModel.updated;
             });
         }
-    }
-
-    function also<T>(obj: T, applyBlock: (obj: T) => void): T {
-        applyBlock(obj)
-        return obj;
     }
 
     export namespace JwRefreshToken {
@@ -77,6 +73,50 @@ namespace DatabaseFixture {
                         e.removed = this.jwRefreshTokenModel2.removed;
                         e.created = this.jwRefreshTokenModel2.created;
                         e.updated = this.jwRefreshTokenModel2.updated;
+                    });
+                }
+            }
+        }
+
+        export namespace FindById {
+            export class Success {
+                private constructor() { }
+                static get jwRefreshTokenModel() {
+                    return new JwRefreshTokenModel("a4", Common.userModel, false, 4000, 4001);
+                }
+
+                static get jwRefreshTokenEntity() {
+                    return also(new JwRefreshTokenEntity(), (e) => {
+                        e.id = this.jwRefreshTokenModel.id;
+                        e.user = Common.userEntity;
+                        e.removed = this.jwRefreshTokenModel.removed;
+                        e.created = this.jwRefreshTokenModel.created;
+                        e.updated = this.jwRefreshTokenModel.updated;
+                    });
+                }
+            }
+
+            export class NotFound {
+                private constructor() { }
+                static get jwRefreshTokenModel() {
+                    return new JwRefreshTokenModel("a5", Common.userModel, false, 5000, 5001);
+                }
+            }
+        }
+
+        export namespace Update {
+            export class Success {
+                private constructor() { }
+                static get jwRefreshTokenModel() {
+                    return new JwRefreshTokenModel("a6", Common.userModel, false, 6000, 6001);
+                }
+
+                static get jwRefreshTokenEntity() {
+                    return also(new JwRefreshTokenEntity(), (e) => {
+                        e.id = this.jwRefreshTokenModel.id;
+                        e.removed = this.jwRefreshTokenModel.removed;
+                        e.created = this.jwRefreshTokenModel.created;
+                        e.updated = this.jwRefreshTokenModel.updated;
                     });
                 }
             }
@@ -176,6 +216,29 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
 
         });
 
+        test('should find a refresh token', async () => {
+            const result = await db.findJwRefreshTokenById(DatabaseFixture.JwRefreshToken.FindById.Success.jwRefreshTokenModel.id);
+            expect({ ...result }).toEqual(DatabaseFixture.JwRefreshToken.FindById.Success.jwRefreshTokenModel);
+            verify(dataSource.getRepository(anything())).once();
+            verify(repo.findOne(anything())).once();
+        });
+
+        test('should find a refresh token', async () => {
+            const result = await db.findJwRefreshTokenById(DatabaseFixture.JwRefreshToken.FindById.NotFound.jwRefreshTokenModel.id);
+            expect(result).toBeNull();
+            verify(dataSource.getRepository(anything())).once();
+            verify(repo.findOne(anything())).once();
+        });
+
+        test('should update a refresh token', async () => {
+            await db.updateJwRefreshToken(DatabaseFixture.JwRefreshToken.Update.Success.jwRefreshTokenModel);
+            verify(dataSource.getRepository(anything())).once();
+            verify(repo.update(anything(), anything())).once();
+
+            const [ updateIdParam, updateEntityParam ] = capture(repo.update).first();
+            expect(updateIdParam).toEqual({ id: DatabaseFixture.JwRefreshToken.Update.Success.jwRefreshTokenEntity.id });
+            expect({ ...updateEntityParam }).toEqual({ ...DatabaseFixture.JwRefreshToken.Update.Success.jwRefreshTokenEntity });
+        });
     });
 
     function setupJwRefreshTokenRepository() {
@@ -187,6 +250,21 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
         });
         when(result.save(anything())).thenResolve();
         when(result.update(anything(), anything())).thenResolve();
+
+        when(result.findOne(anything())).thenCall(async (...args: any[]) => {
+            const options = args[0] as FindOneOptions<JwRefreshTokenEntity>;
+            const where = options?.where as FindOptionsWhere<JwRefreshTokenEntity>;
+            if (where) {
+                const id = where.id;
+                switch(id) {
+                    case DatabaseFixture.JwRefreshToken.FindById.Success.jwRefreshTokenEntity.id:
+                        return DatabaseFixture.JwRefreshToken.FindById.Success.jwRefreshTokenEntity;
+                    default:
+                        return null;
+                }
+            }
+            return null;
+        });
 
         return result;
     }

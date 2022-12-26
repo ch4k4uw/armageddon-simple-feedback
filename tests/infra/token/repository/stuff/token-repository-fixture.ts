@@ -41,27 +41,27 @@ export namespace TokenRepositoryFixture {
 
         when(database.insertJwRefreshToken(anything())).thenResolve();
 
-        when(database.findJwRefreshToken(UpdateAccess.Success.jwToken.id))
+        when(database.findJwRefreshTokenById(UpdateAccess.Success.jwToken.id))
             .thenResolve(UpdateAccess.Success.jwRefreshToken);
-        when(database.findJwRefreshToken(UpdateAccess.InvalidRefreshToken1.jwToken.id))
+        when(database.findJwRefreshTokenById(UpdateAccess.InvalidRefreshToken1.jwToken.id))
             .thenResolve(UpdateAccess.InvalidRefreshToken1.jwRefreshToken);
-        when(database.findJwRefreshToken(UpdateAccess.InvalidRefreshToken2.jwToken.id))
+        when(database.findJwRefreshTokenById(UpdateAccess.InvalidRefreshToken2.jwToken.id))
             .thenCall(async () => null);
-        when(database.findJwRefreshToken(UpdateAccess.UserNotFound.jwToken.id))
+        when(database.findJwRefreshTokenById(UpdateAccess.UserNotFound.jwToken.id))
             .thenResolve(UpdateAccess.UserNotFound.jwRefreshToken);
-        when(database.findJwRefreshToken(RemoveRefresh.Success.jwToken.id))
+        when(database.findJwRefreshTokenById(RemoveRefresh.Success.jwToken.id))
             .thenResolve(RemoveRefresh.Success.jwRefreshToken);
-        when(database.findJwRefreshToken(RemoveRefresh.InvalidRefreshToken1.jwToken.id))
+        when(database.findJwRefreshTokenById(RemoveRefresh.InvalidRefreshToken1.jwToken.id))
             .thenResolve(RemoveRefresh.InvalidRefreshToken1.jwRefreshToken);
-        when(database.findJwRefreshToken(RemoveRefresh.InvalidRefreshToken2.jwToken.id))
+        when(database.findJwRefreshTokenById(RemoveRefresh.InvalidRefreshToken2.jwToken.id))
             .thenCall(async () => null);
-        when(database.findJwRefreshToken(FindRefreshByRaw.Success.jwToken.id))
+        when(database.findJwRefreshTokenById(FindRefreshByRaw.Success.jwToken.id))
             .thenResolve(FindRefreshByRaw.Success.jwRefreshToken);
-        when(database.findJwRefreshToken(FindRefreshByRaw.InvalidRefreshToken1.jwToken.id))
+        when(database.findJwRefreshTokenById(FindRefreshByRaw.InvalidRefreshToken1.jwToken.id))
             .thenResolve(FindRefreshByRaw.InvalidRefreshToken1.jwRefreshToken);
-        when(database.findJwRefreshToken(FindRefreshByRaw.InvalidRefreshToken2.jwToken.id))
+        when(database.findJwRefreshTokenById(FindRefreshByRaw.InvalidRefreshToken2.jwToken.id))
             .thenCall(async () => null);
-        when(database.findJwRefreshToken(FindRefreshByRaw.UserNotFound.jwToken.id))
+        when(database.findJwRefreshTokenById(FindRefreshByRaw.UserNotFound.jwToken.id))
             .thenResolve(FindRefreshByRaw.UserNotFound.jwRefreshToken);
 
         when(database.insertAndUpdateRefreshToken(anything(), anything())).thenResolve();

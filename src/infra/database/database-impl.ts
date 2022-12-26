@@ -1,4 +1,5 @@
 import { DataSource, Entity, FindOptionsWhere } from "typeorm";
+import { also } from "../../domain/common/service/also";
 import { Role } from "../../domain/credential/data/role";
 import { IDatabase } from "./database";
 import { IFeedbackQueryOptions } from "./feedback-database";
@@ -51,7 +52,7 @@ export class DatabaseImpl implements IDatabase {
     }
 
     async updateJwRefreshToken(token: JwRefreshTokenModel): Promise<void> {
-        await this.dataSource.getRepository(JwRefreshTokenEntity).update({ id: token.id }, token);
+        await this.dataSource.getRepository(JwRefreshTokenEntity).update({ id: token.id }, jwRefreshTokenModelToEntity(token));
     }
 
     async findUserById(id: string): Promise<UserModel | null> {
@@ -206,6 +207,16 @@ const jwRefreshTokenModelToEntity = (model: JwRefreshTokenModel) => {
         updated: model.updated,
     };
 };
+
+const userModelToEntity = (model: UserModel) =>
+    model === UserModel.empty ? undefined : also(new UserEntity(), (obj) => {
+        obj.id = model.id;
+        obj.firstName = model.firstName;
+        obj.lastName = model.lastName;
+        obj.email = model.email;
+        obj.created = model.created;
+        obj.updated = model.updated;
+    });
 
 const jwRefreshTokenEntityToModel = (entity: JwRefreshTokenEntity | null) =>
     entity == null ? undefined : new JwRefreshTokenModel(
