@@ -1,13 +1,14 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class default1672068429956 implements MigrationInterface {
-    name = 'default1672068429956'
+export class default1672176566339 implements MigrationInterface {
+    name = 'default1672176566339'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE "jw-refresh-token" ("id" text PRIMARY KEY NOT NULL, "removed" boolean NOT NULL, "created" integer NOT NULL, "updated" integer NOT NULL, "userId" varchar)`);
         await queryRunner.query(`CREATE TABLE "user" ("id" varchar PRIMARY KEY NOT NULL, "firstName" text NOT NULL, "lastName" text NOT NULL, "email" text NOT NULL, "created" integer NOT NULL, "updated" integer NOT NULL)`);
         await queryRunner.query(`CREATE TABLE "credential" ("userId" varchar PRIMARY KEY NOT NULL, "login" text NOT NULL, "password" text NOT NULL, "role" integer NOT NULL, CONSTRAINT "REL_51dc2344d47cea3102674c6496" UNIQUE ("userId"))`);
         await queryRunner.query(`CREATE TABLE "topic" ("id" text PRIMARY KEY NOT NULL, "code" text NOT NULL, "title" text NOT NULL, "lowerTitle" text NOT NULL, "description" text NOT NULL, "lowerDescription" text NOT NULL, "author" text NOT NULL, "authorName" text NOT NULL, "expires" integer NOT NULL, "created" integer NOT NULL, "updated" integer NOT NULL)`);
+        await queryRunner.query(`CREATE INDEX "IDX_fd5f72b33525473c6539094a95" ON "topic" ("code") `);
         await queryRunner.query(`CREATE INDEX "IDX_ad18d6e9dc6c7e5be32f4b2ace" ON "topic" ("lowerTitle") `);
         await queryRunner.query(`CREATE INDEX "IDX_d5bfa73441b7e1d253da5b0459" ON "topic" ("lowerDescription") `);
         await queryRunner.query(`CREATE INDEX "IDX_9f3ef52f7844ea6581dd393424" ON "topic" ("lowerTitle", "lowerDescription") `);
@@ -61,6 +62,7 @@ export class default1672068429956 implements MigrationInterface {
         await queryRunner.query(`DROP INDEX "IDX_9f3ef52f7844ea6581dd393424"`);
         await queryRunner.query(`DROP INDEX "IDX_d5bfa73441b7e1d253da5b0459"`);
         await queryRunner.query(`DROP INDEX "IDX_ad18d6e9dc6c7e5be32f4b2ace"`);
+        await queryRunner.query(`DROP INDEX "IDX_fd5f72b33525473c6539094a95"`);
         await queryRunner.query(`DROP TABLE "topic"`);
         await queryRunner.query(`DROP TABLE "credential"`);
         await queryRunner.query(`DROP TABLE "user"`);

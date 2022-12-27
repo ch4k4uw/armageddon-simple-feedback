@@ -8,6 +8,7 @@ export class TopicEntity {
     id: string;
 
     @Column("text")
+    @Index()
     code: string;
 
     @Column("text")
