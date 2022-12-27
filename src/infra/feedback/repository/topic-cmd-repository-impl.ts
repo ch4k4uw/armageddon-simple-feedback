@@ -41,7 +41,7 @@ export class TopicCmdRepositoryImpl implements ITopicCmdRepository {
         const db = this.database;
         async function tryNextCode(): Promise<string> {
             const code = await svc.createId();
-            if (!(await db.findTopicCodeExists(code))) {
+            if (!(await db.findTopicExistsByCode(code))) {
                 return code;
             } else {
                 return await tryNextCode();

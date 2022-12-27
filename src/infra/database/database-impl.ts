@@ -102,7 +102,7 @@ export class DatabaseImpl implements IDatabase {
         return many.length !== 0;
     }
 
-    async findTopicCodeExists(code: string): Promise<boolean> {
+    async findTopicExistsByCode(code: string): Promise<boolean> {
         const repo = this.dataSource.getRepository(TopicEntity);
         const one = await repo.findOne({
             select: ["code"],
@@ -117,11 +117,11 @@ export class DatabaseImpl implements IDatabase {
         const repo = this.dataSource.getRepository(TopicEntity);
         const title = `t.lowerTitle LIKE '%:title%'`;
         const description = `t.lowerDescription LIKE '%:description%'`;
+        const whereParams = { title: options?.title || "", description: options?.description || "" };
         const many = await repo.createQueryBuilder("t")
-            .where(`${title} OR ${description}`)
+            .where(`${title} OR ${description}`, whereParams)
             .limit(size)
             .offset((index - 1) * size)
-            .setParameters({ title: options?.title || "", description: options?.description || "" })
             .getMany();
 
         const count = await repo.createQueryBuilder("t")
