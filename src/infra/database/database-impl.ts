@@ -151,8 +151,7 @@ export class DatabaseImpl implements IDatabase {
         const repo = this.dataSource.getRepository(FeedbackEntity);
         const many = await repo.createQueryBuilder("f")
             .select("f.id, f.rating")
-            .where("f.topicId=:id")
-            .setParameter("id", id)
+            .where("f.topicId=:id", { id })
             .getMany();
         return many.map(v => new FeedbackSummaryModel(v.id, v.rating));
     }
