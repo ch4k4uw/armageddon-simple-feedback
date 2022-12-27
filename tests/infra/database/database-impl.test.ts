@@ -1,139 +1,39 @@
-import { anything, capture, instance, mock, verify, when } from "ts-mockito";
+import { anyNumber, anything, capture, instance, mock, verify, when } from "ts-mockito";
 import { IDatabase } from "../../../src/infra/database/database";
 import * as Uuid from "uuid";
-import { DataSource, EntityManager, FindOneOptions, Repository, FindOptionsWhere } from "typeorm";
+import { DataSource, EntityManager, FindOneOptions, Repository, FindOptionsWhere, FindManyOptions, SelectQueryBuilder } from "typeorm";
 import { DatabaseImpl } from "../../../src/infra/database/database-impl";
 import { JwRefreshTokenEntity } from "../../../src/infra/database/orm/jw-refresh-token.entity";
-import { JwRefreshTokenModel } from "../../../src/infra/database/model/jw-refresh-token-model";
-import { UserModel } from "../../../src/infra/database/model/user-model";
+import { DatabaseFixture } from "./stuff/database-fixture";
 import { UserEntity } from "../../../src/infra/database/orm/user.entity";
-import { also } from "../../../src/domain/common/service/also";
+import { CredentialEntity } from "../../../src/infra/database/orm/credential.entity";
+import { TopicEntity } from "../../../src/infra/database/orm/topic.entity";
+import { FeedbackEntity } from "../../../src/infra/database/orm/feedback.entity";
+import { resourceLimits } from "worker_threads";
+import { PagedModel } from "../../../src/infra/database/model/paged-model";
+import { TopicModel } from "../../../src/infra/database/model/topic-model";
 
-namespace DatabaseFixture {
-    class Common {
-        private constructor() { }
-        static get userModel() {
-            return new UserModel("a1", "b1", "c1", "d1", 1000, 1001);
-        }
-
-        static get userEntity() {
-            return also(new UserEntity(), (e) => {
-                e.id = this.userModel.id;
-                e.firstName = this.userModel.firstName;
-                e.lastName = this.userModel.lastName;
-                e.email = this.userModel.email;
-                e.created = this.userModel.created;
-                e.updated = this.userModel.updated;
-            });
-        }
-    }
-
-    export namespace JwRefreshToken {
-        export namespace Insert {
-            export class Success {
-                private constructor() { }
-                static get jwRefreshTokenModel() {
-                    return new JwRefreshTokenModel("a1", Common.userModel, false, 1000, 1001);
-                }
-
-                static get jwRefreshTokenEntity() {
-                    return also(new JwRefreshTokenEntity(), (e) => {
-                        e.id = this.jwRefreshTokenModel.id;
-                        e.removed = this.jwRefreshTokenModel.removed;
-                        e.created = this.jwRefreshTokenModel.created;
-                        e.updated = this.jwRefreshTokenModel.updated;
-                    });
-                }
-            }
-        }
-
-        export namespace UpdateAndInsert {
-            export class Success {
-                private constructor() { }
-                static get jwRefreshTokenModel1() {
-                    return new JwRefreshTokenModel("a2", Common.userModel, false, 2000, 2001);
-                }
-
-                static get jwRefreshTokenEntity1() {
-                    return also(new JwRefreshTokenEntity(), (e) => {
-                        e.id = this.jwRefreshTokenModel1.id;
-                        e.removed = this.jwRefreshTokenModel1.removed;
-                        e.created = this.jwRefreshTokenModel1.created;
-                        e.updated = this.jwRefreshTokenModel1.updated;
-                    });
-                }
-
-                static get jwRefreshTokenModel2() {
-                    return new JwRefreshTokenModel("a3", Common.userModel, false, 3000, 3001);
-                }
-
-                static get jwRefreshTokenEntity2() {
-                    return also(new JwRefreshTokenEntity(), (e) => {
-                        e.id = this.jwRefreshTokenModel2.id;
-                        e.removed = this.jwRefreshTokenModel2.removed;
-                        e.created = this.jwRefreshTokenModel2.created;
-                        e.updated = this.jwRefreshTokenModel2.updated;
-                    });
-                }
-            }
-        }
-
-        export namespace FindById {
-            export class Success {
-                private constructor() { }
-                static get jwRefreshTokenModel() {
-                    return new JwRefreshTokenModel("a4", Common.userModel, false, 4000, 4001);
-                }
-
-                static get jwRefreshTokenEntity() {
-                    return also(new JwRefreshTokenEntity(), (e) => {
-                        e.id = this.jwRefreshTokenModel.id;
-                        e.user = Common.userEntity;
-                        e.removed = this.jwRefreshTokenModel.removed;
-                        e.created = this.jwRefreshTokenModel.created;
-                        e.updated = this.jwRefreshTokenModel.updated;
-                    });
-                }
-            }
-
-            export class NotFound {
-                private constructor() { }
-                static get jwRefreshTokenModel() {
-                    return new JwRefreshTokenModel("a5", Common.userModel, false, 5000, 5001);
-                }
-            }
-        }
-
-        export namespace Update {
-            export class Success {
-                private constructor() { }
-                static get jwRefreshTokenModel() {
-                    return new JwRefreshTokenModel("a6", Common.userModel, false, 6000, 6001);
-                }
-
-                static get jwRefreshTokenEntity() {
-                    return also(new JwRefreshTokenEntity(), (e) => {
-                        e.id = this.jwRefreshTokenModel.id;
-                        e.removed = this.jwRefreshTokenModel.removed;
-                        e.created = this.jwRefreshTokenModel.created;
-                        e.updated = this.jwRefreshTokenModel.updated;
-                    });
-                }
-            }
-        }
-    }
-}
 
 interface IDataSourceSetupOptions {
     readonly jwRefreshTokenRepositoryMock?: Repository<JwRefreshTokenEntity>;
+    readonly userRepositoryMock?: Repository<UserEntity>;
+    readonly credentialRepositoryMock?: Repository<CredentialEntity>;
+    readonly topicRepositoryMock?: Repository<TopicEntity>;
+    readonly feedbackRepositoryMock?: Repository<FeedbackEntity>;
     readonly entityManager?: EntityManager;
 }
 
 describe('TypeOrm sqlite databaseimpl tests', () => {
     const createIdFn = async () => Uuid.v4();
+    let db: IDatabase;
+    let dataSource: DataSource;
+    let jwRefreshTokenRepo: Repository<JwRefreshTokenEntity>;
+    let userRepo: Repository<UserEntity>;
+    let credentialRepo: Repository<CredentialEntity>;
+    let topicRepo: Repository<TopicEntity>;
+    let feedbackRepo: Repository<FeedbackEntity>;
+    let entityManager: EntityManager;
     describe('misc tests', () => {
-        let db: IDatabase;
-        let dataSource: DataSource;
         beforeEach(() => {
             dataSource = setupDataSource();
             db = new DatabaseImpl(instance(dataSource), createIdFn);
@@ -159,6 +59,26 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
                 .thenCall(() => instance(options?.jwRefreshTokenRepositoryMock));
         }
 
+        if (options?.userRepositoryMock) {
+            when(result.getRepository(UserEntity))
+                .thenCall(() => instance(options?.userRepositoryMock));
+        }
+
+        if (options?.credentialRepositoryMock) {
+            when(result.getRepository(CredentialEntity))
+                .thenCall(() => instance(options?.credentialRepositoryMock));
+        }
+
+        if (options?.topicRepositoryMock) {
+            when(result.getRepository(TopicEntity))
+                .thenCall(() => instance(options?.topicRepositoryMock));
+        }
+
+        if (options?.feedbackRepositoryMock) {
+            when(result.getRepository(FeedbackEntity))
+                .thenCall(() => instance(options?.feedbackRepositoryMock));
+        }
+
         if (options?.entityManager) {
             when(result.transaction(anything())).thenCall(async (...args: any[]) => {
                 const fn: ((em: EntityManager | undefined) => Promise<void>) = args[0];
@@ -170,14 +90,10 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
     }
 
     describe('Jw token tests', () => {
-        let db: IDatabase;
-        let dataSource: DataSource;
-        let repo: Repository<JwRefreshTokenEntity>;
-        let entityManager: EntityManager;
         beforeEach(() => {
-            repo = setupJwRefreshTokenRepository();
-            entityManager = setupEntityManager({ jwRefreshTokenRepositoryMock: repo });
-            dataSource = setupDataSource({ jwRefreshTokenRepositoryMock: repo, entityManager });
+            jwRefreshTokenRepo = setupJwRefreshTokenRepository();
+            entityManager = setupEntityManager({ jwRefreshTokenRepositoryMock: jwRefreshTokenRepo });
+            dataSource = setupDataSource({ jwRefreshTokenRepositoryMock: jwRefreshTokenRepo, entityManager });
             db = new DatabaseImpl(instance(dataSource), createIdFn);
         });
 
@@ -185,11 +101,11 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
             await db.insertJwRefreshToken(DatabaseFixture.JwRefreshToken.Insert.Success.jwRefreshTokenModel);
 
             verify(dataSource.getRepository(JwRefreshTokenEntity)).once();
-            verify(repo.create(anything())).once();
-            verify(repo.save(anything())).once();
+            verify(jwRefreshTokenRepo.create(anything())).once();
+            verify(jwRefreshTokenRepo.save(anything())).once();
 
-            const [creationParam] = capture(repo.create).first();
-            const [savingParam] = capture(repo.save).first();
+            const [creationParam] = capture(jwRefreshTokenRepo.create).first();
+            const [savingParam] = capture(jwRefreshTokenRepo.save).first();
 
             expect({ ...creationParam }).toEqual({ ...DatabaseFixture.JwRefreshToken.Insert.Success.jwRefreshTokenEntity });
             expect({ ...savingParam }).toEqual({ ...DatabaseFixture.JwRefreshToken.Insert.Success.jwRefreshTokenEntity });
@@ -203,12 +119,12 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
 
             verify(dataSource.transaction(anything())).once();
             verify(entityManager.getRepository(JwRefreshTokenEntity)).once();
-            verify(repo.update(anything(), anything())).once();
-            verify(repo.create(anything())).once();
-            verify(repo.save(anything())).once();
+            verify(jwRefreshTokenRepo.update(anything(), anything())).once();
+            verify(jwRefreshTokenRepo.create(anything())).once();
+            verify(jwRefreshTokenRepo.save(anything())).once();
 
-            const [ updateIdParam, updateEntityParam ] = capture(repo.update).first();
-            const [ savingParam ] = capture(repo.save).first();
+            const [updateIdParam, updateEntityParam] = capture(jwRefreshTokenRepo.update).first();
+            const [savingParam] = capture(jwRefreshTokenRepo.save).first();
 
             expect({ ...savingParam }).toEqual({ ...DatabaseFixture.JwRefreshToken.UpdateAndInsert.Success.jwRefreshTokenEntity1 });
             expect(updateIdParam).toEqual({ id: DatabaseFixture.JwRefreshToken.UpdateAndInsert.Success.jwRefreshTokenEntity2.id });
@@ -216,30 +132,235 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
 
         });
 
-        test('should find a refresh token', async () => {
-            const result = await db.findJwRefreshTokenById(DatabaseFixture.JwRefreshToken.FindById.Success.jwRefreshTokenModel.id);
-            expect({ ...result }).toEqual(DatabaseFixture.JwRefreshToken.FindById.Success.jwRefreshTokenModel);
-            verify(dataSource.getRepository(anything())).once();
-            verify(repo.findOne(anything())).once();
-        });
+        describe('Jw refresh token tests', () => {
+            test('should find a refresh token', async () => {
+                const result = await db.findJwRefreshTokenById(DatabaseFixture.JwRefreshToken.FindById.Success.jwRefreshTokenModel.id);
+                expect({ ...result }).toEqual(DatabaseFixture.JwRefreshToken.FindById.Success.jwRefreshTokenModel);
+                verify(dataSource.getRepository(anything())).once();
+                verify(jwRefreshTokenRepo.findOne(anything())).once();
+            });
 
-        test('should find a refresh token', async () => {
-            const result = await db.findJwRefreshTokenById(DatabaseFixture.JwRefreshToken.FindById.NotFound.jwRefreshTokenModel.id);
-            expect(result).toBeNull();
-            verify(dataSource.getRepository(anything())).once();
-            verify(repo.findOne(anything())).once();
-        });
+            test('should find a refresh token', async () => {
+                const result = await db.findJwRefreshTokenById(DatabaseFixture.JwRefreshToken.FindById.NotFound.jwRefreshTokenModel.id);
+                expect(result).toBeNull();
+                verify(dataSource.getRepository(anything())).once();
+                verify(jwRefreshTokenRepo.findOne(anything())).once();
+            });
 
-        test('should update a refresh token', async () => {
-            await db.updateJwRefreshToken(DatabaseFixture.JwRefreshToken.Update.Success.jwRefreshTokenModel);
-            verify(dataSource.getRepository(anything())).once();
-            verify(repo.update(anything(), anything())).once();
+            test('should update a refresh token', async () => {
+                await db.updateJwRefreshToken(DatabaseFixture.JwRefreshToken.Update.Success.jwRefreshTokenModel);
+                verify(dataSource.getRepository(anything())).once();
+                verify(jwRefreshTokenRepo.update(anything(), anything())).once();
 
-            const [ updateIdParam, updateEntityParam ] = capture(repo.update).first();
-            expect(updateIdParam).toEqual({ id: DatabaseFixture.JwRefreshToken.Update.Success.jwRefreshTokenEntity.id });
-            expect({ ...updateEntityParam }).toEqual({ ...DatabaseFixture.JwRefreshToken.Update.Success.jwRefreshTokenEntity });
+                const [updateIdParam, updateEntityParam] = capture(jwRefreshTokenRepo.update).first();
+                expect(updateIdParam).toEqual({ id: DatabaseFixture.JwRefreshToken.Update.Success.jwRefreshTokenEntity.id });
+                expect({ ...updateEntityParam }).toEqual({ ...DatabaseFixture.JwRefreshToken.Update.Success.jwRefreshTokenEntity });
+            });
         });
     });
+
+    describe('User tests', () => {
+        beforeEach(() => {
+            userRepo = setupUserRepository();
+            dataSource = setupDataSource({ userRepositoryMock: userRepo });
+            db = new DatabaseImpl(instance(dataSource), createIdFn);
+        });
+
+        test('should find an user', async () => {
+            const result = await db.findUserById(DatabaseFixture.User.FindById.Success.userModel.id);
+
+            expect({ ...result }).toEqual({ ...DatabaseFixture.User.FindById.Success.userModel });
+            verify(userRepo.findOneBy(anything())).once();
+        });
+
+        test('shouldn\'t find an user', async () => {
+            const result = await db.findUserById(DatabaseFixture.User.FindById.NotFound.userModel.id);
+
+            expect(result).toBeNull();
+            verify(userRepo.findOneBy(anything())).once();
+        });
+    });
+
+    describe('Credential tests', () => {
+        beforeEach(() => {
+            credentialRepo = setupCredentialRepository();
+            dataSource = setupDataSource({ credentialRepositoryMock: credentialRepo });
+            db = new DatabaseImpl(instance(dataSource), createIdFn);
+        });
+
+        test('should find a credential', async () => {
+            const result = await db.findCredentialByLogin(
+                DatabaseFixture.Credential.FindByLogin.Success.credentialModel.login
+            );
+
+            expect({ ...result }).toEqual({ ...DatabaseFixture.Credential.FindByLogin.Success.credentialModel });
+            verify(credentialRepo.findOneBy(anything())).once();
+        });
+
+        test('shouldn\'t find n credential', async () => {
+            const result = await db.findCredentialByLogin(
+                DatabaseFixture.Credential.FindByLogin.NotFound.credentialEntity.login
+            );
+
+            expect(result).toBeNull();
+            verify(credentialRepo.findOneBy(anything())).once();
+        });
+    });
+
+    describe('Topic tests', () => {
+        let selectQueryBuilder: SelectQueryBuilder<TopicEntity>;
+        beforeEach(() => {
+            selectQueryBuilder = setupTopicSelectQueryBuilder();
+            topicRepo = setupTopicRepository(selectQueryBuilder);
+            dataSource = setupDataSource({ topicRepositoryMock: topicRepo });
+            db = new DatabaseImpl(instance(dataSource), createIdFn);
+        });
+
+        test('should insert a topic', async () => { 
+            await db.insertTopic(
+                DatabaseFixture.Topic.Insert.Success.topicModel
+            );
+
+            verify(dataSource.getRepository(anything())).once();
+            verify(topicRepo.create(anything())).once();
+            verify(topicRepo.save(anything())).once();
+
+            const [ insertEntityParam ] = capture(topicRepo.create).first();
+
+            expect({ ...insertEntityParam }).toEqual({ 
+                ...DatabaseFixture.Topic.Insert.Success.topicEntity
+            });
+        });
+
+        test('should update a topic', async () => { 
+            await db.updateTopic(
+                DatabaseFixture.Topic.Update.Success.topicModel
+            );
+
+            verify(dataSource.getRepository(anything())).once();
+            verify(topicRepo.update(anything(), anything())).once();
+
+            const [ updateIdParam, updateEntityParam ] = capture(topicRepo.update).first();
+
+            expect(updateIdParam).toEqual({
+                id: DatabaseFixture.Topic.Update.Success.topicModel.id
+            });
+            expect(updateEntityParam).toEqual({ 
+                ...DatabaseFixture.Topic.Update.Success.topicEntity 
+            });
+        });
+
+        test('should remove a topic', async () => {
+            await db.removeTopicById(
+                DatabaseFixture.Topic.DeleteById.Success.topicModel.id
+            );
+
+            verify(dataSource.getRepository(anything())).once();
+            verify(topicRepo.delete(anything())).once();
+        });
+
+        describe('Find by id tests', () => {
+            test('should find a topic', async () => { 
+                const result = await db.findTopicById(
+                    DatabaseFixture.Topic.FindById.Success.topicModel.id
+                );
+
+                expect({ ...result }).toEqual({
+                    ...DatabaseFixture.Topic.FindById.Success.topicModel
+                });
+                verify(dataSource.getRepository(anything())).once();
+                verify(topicRepo.findOneBy(anything())).once();
+            });
+
+            test('shouldn\'t find a topic', async () => { 
+                const result = await db.findTopicById(
+                    DatabaseFixture.Topic.FindById.NotFound.topicModel.id
+                );
+
+                expect(result).toBeNull();
+                verify(dataSource.getRepository(anything())).once();
+                verify(topicRepo.findOneBy(anything())).once();
+            });
+        });
+
+        describe('Find by code tests', () => {
+            test('should find a topic', async () => { 
+                const result = await db.findTopicByCode(
+                    DatabaseFixture.Topic.FindByCode.Success.topicModel.id
+                );
+
+                expect({ ...result }).toEqual({
+                    ...DatabaseFixture.Topic.FindByCode.Success.topicModel
+                });
+                verify(dataSource.getRepository(anything())).once();
+                verify(topicRepo.findOneBy(anything())).once();
+            });
+
+            test('shouldn\'t find a topic', async () => { 
+                const result = await db.findTopicById(
+                    DatabaseFixture.Topic.FindByCode.NotFound.topicModel.id
+                );
+
+                expect(result).toBeNull();
+                verify(dataSource.getRepository(anything())).once();
+                verify(topicRepo.findOneBy(anything())).once();
+            });
+
+        });
+
+        describe('Find exists by title tests', () => {
+            test('should find a topic', async () => { 
+                const result = await db.findTopicExistsByTitle(
+                    DatabaseFixture.Topic.FindExistsByTitle.Success.topicEntity.lowerTitle
+                );
+
+                expect(result).toEqual(true);
+                verify(dataSource.getRepository(anything())).once();
+                verify(topicRepo.find(anything())).once();
+            });
+
+            test('shouldn\'t find a topic', async () => { 
+                const result = await db.findTopicExistsByTitle(
+                    DatabaseFixture.Topic.FindExistsByTitle.NotFound.topicModel.title.toLowerCase()
+                );
+
+                expect(result).toEqual(false);
+                verify(dataSource.getRepository(anything())).once();
+                verify(topicRepo.find(anything())).once();
+            });
+
+        });
+
+        test('should find a topic page', async () => { 
+            const result = await db.findTopicPage(
+                DatabaseFixture.Topic.FindPage.Success.pageIndex,
+                DatabaseFixture.Topic.FindPage.Success.pageSize
+            );
+
+            const pageIndex = DatabaseFixture.Topic.FindPage.Success.pageIndex;
+            const pageSize = DatabaseFixture.Topic.FindPage.Success.pageSize;
+            const startOffset = (pageIndex-1) * pageSize;
+            const endOffset = startOffset + pageSize;
+
+            expect({ ...result }).toEqual({
+                ...new PagedModel<TopicModel>(
+                    DatabaseFixture.Topic.FindPage.Success.topicModelList.slice(startOffset, endOffset),
+                    pageSize,
+                    pageIndex,
+                    DatabaseFixture.Topic.FindPage.Success.pageTotal,
+                )
+            });
+        });
+
+    });
+
+    /*describe('Feedback tests', () => {
+        beforeEach(() => {
+            feedbackRepo = setupFeedbackRepository();
+            dataSource = setupDataSource({ feedbackRepositoryMock: feedbackRepo });
+            db = new DatabaseImpl(instance(dataSource), createIdFn);
+        });
+    });*/
 
     function setupJwRefreshTokenRepository() {
         const result = mock<Repository<JwRefreshTokenEntity>>();
@@ -256,7 +377,7 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
             const where = options?.where as FindOptionsWhere<JwRefreshTokenEntity>;
             if (where) {
                 const id = where.id;
-                switch(id) {
+                switch (id) {
                     case DatabaseFixture.JwRefreshToken.FindById.Success.jwRefreshTokenEntity.id:
                         return DatabaseFixture.JwRefreshToken.FindById.Success.jwRefreshTokenEntity;
                     default:
@@ -276,6 +397,131 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
             when(result.getRepository(JwRefreshTokenEntity))
                 .thenCall(() => instance(options?.jwRefreshTokenRepositoryMock));
         }
+
+        return result;
+    }
+
+    function setupUserRepository() {
+        const result = mock<Repository<UserEntity>>();
+
+        when(result.findOneBy(anything())).thenCall((...args: any[]) => {
+            if (args[0] instanceof Array) {
+                return null;
+            }
+            const where = args[0] as FindOptionsWhere<UserEntity>;
+            switch (where.id) {
+                case DatabaseFixture.User.FindById.Success.userModel.id:
+                    return DatabaseFixture.User.FindById.Success.userEntity;
+                default:
+                    return null;
+            }
+        });
+
+        return result;
+    }
+
+    function setupCredentialRepository() {
+        const result = mock<Repository<CredentialEntity>>();
+
+        when(result.findOneBy(anything())).thenCall((...args: any[]) => {
+            if (args[0] instanceof Array) {
+                return null;
+            }
+            const where = args[0] as FindOptionsWhere<CredentialEntity>;
+            switch (where.login) {
+                case DatabaseFixture.Credential.FindByLogin.Success.credentialEntity.login:
+                    return DatabaseFixture.Credential.FindByLogin.Success.credentialEntity;
+                default:
+                    return null;
+            }
+        });
+
+        return result;
+    }
+
+    function setupTopicRepository(selectQueryBuilder?: SelectQueryBuilder<TopicEntity>) {
+        const result = mock<Repository<TopicEntity>>();
+
+        when(result.create(anything())).thenCall(async (...args: any[]) => args[0]);
+
+        when(result.save(anything())).thenResolve();
+        when(result.update(anything(), anything())).thenResolve();
+        when(result.delete(anything())).thenResolve();
+
+        when(result.findOneBy(anything())).thenCall(async (...args: any[]) => {
+            if (args[0] instanceof Array) {
+                return null;
+            }
+            const where = args[0] as FindOptionsWhere<TopicEntity>;
+            switch (where.id) {
+                case DatabaseFixture.Topic.FindById.Success.topicEntity.id:
+                    return DatabaseFixture.Topic.FindById.Success.topicEntity;
+            }
+
+            switch (where.code) {
+                case DatabaseFixture.Topic.FindByCode.Success.topicEntity.id:
+                    return DatabaseFixture.Topic.FindByCode.Success.topicEntity;
+            }
+            return null;
+        });
+
+        when(result.find(anything())).thenCall(async (...args: any[]) => {
+            const options = args[0] as FindManyOptions<TopicEntity>;
+            const where = options.where;
+            if (where instanceof Array) {
+                return [];
+            }
+            switch(where?.title) {
+                case DatabaseFixture.Topic.FindExistsByTitle.Success.topicEntity.lowerTitle:
+                    return [DatabaseFixture.Topic.FindExistsByTitle.Success.topicEntity];
+                default:
+                    return [];
+            }
+        });
+
+        when(result.findOne(anything())).thenCall(async (...args: any[]) => {
+            const options = args[0] as FindOneOptions<TopicEntity>;
+            const where = options.where;
+            if (where instanceof Array) {
+                return null;
+            }
+            switch(where?.title) {
+                case DatabaseFixture.Topic.FindExistsByCode.Success.topicEntity.title:
+                    return DatabaseFixture.Topic.FindExistsByCode.Success.topicEntity;
+                default:
+                    return null;
+            }
+        });
+
+        if (selectQueryBuilder) {
+            when(result.createQueryBuilder(anything())).thenCall(() => instance(selectQueryBuilder));
+        }
+
+        return result;
+    }
+
+    const topicPageSize = 10;
+    const topicPageIndex = 2;
+    const topicPageTotal = 3;
+    function setupTopicSelectQueryBuilder() {
+        const result = mock<SelectQueryBuilder<TopicEntity>>();
+
+        when(result.where(anything(), anything())).thenCall(() => instance(result));
+        when(result.limit(anyNumber())).thenCall(() => instance(result));
+        when(result.offset(anyNumber())).thenCall(() => instance(result));
+        const pageIndex = DatabaseFixture.Topic.FindPage.Success.pageIndex;
+        const pageSize = DatabaseFixture.Topic.FindPage.Success.pageSize;
+        const startOffset = (pageIndex-1) * pageSize;
+        const endOffset = startOffset + pageSize;
+        when(result.getMany()).thenResolve(
+            DatabaseFixture.Topic.FindPage.Success.topicEntityList.slice(
+                startOffset,
+                endOffset,
+            )
+        );
+        when(result.getCount()).thenResolve(
+            DatabaseFixture.Topic.FindPage.Success.topicEntityList.length
+        )
 
         return result;
     }
