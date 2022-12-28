@@ -1,10 +1,13 @@
 import { also } from "../../../../src/domain/common/service/also";
 import { Role } from "../../../../src/domain/credential/data/role";
 import { CredentialModel } from "../../../../src/infra/database/model/credential-model";
+import { FeedbackModel } from "../../../../src/infra/database/model/feedback-model";
+import { FeedbackSummaryModel } from "../../../../src/infra/database/model/feedback-summary-model";
 import { JwRefreshTokenModel } from "../../../../src/infra/database/model/jw-refresh-token-model";
 import { TopicModel } from "../../../../src/infra/database/model/topic-model";
 import { UserModel } from "../../../../src/infra/database/model/user-model";
 import { CredentialEntity } from "../../../../src/infra/database/orm/credential.entity";
+import { FeedbackEntity } from "../../../../src/infra/database/orm/feedback.entity";
 import { JwRefreshTokenEntity } from "../../../../src/infra/database/orm/jw-refresh-token.entity";
 import { TopicEntity } from "../../../../src/infra/database/orm/topic.entity";
 import { UserEntity } from "../../../../src/infra/database/orm/user.entity";
@@ -364,8 +367,8 @@ export namespace DatabaseFixture {
                 private static _topicEntityList = lazy(() => {
                     const result: TopicEntity[] = [];
 
-                    for (let i=0; i<27; ++i) {
-                        const suffix = i+1;
+                    for (let i = 0; i < 27; ++i) {
+                        const suffix = i + 1;
                         result.push(
                             also(new TopicEntity(), (e) => {
                                 e.id = `al${suffix}`;
@@ -393,14 +396,14 @@ export namespace DatabaseFixture {
                 static get topicModelList() {
                     return this.topicEntityList.map(v => {
                         return new TopicModel(
-                            v.id, 
-                            v.code, 
-                            v.title, 
-                            v.description, 
-                            v.author, 
-                            v.authorName, 
-                            v.expires, 
-                            v.created, 
+                            v.id,
+                            v.code,
+                            v.title,
+                            v.description,
+                            v.author,
+                            v.authorName,
+                            v.expires,
+                            v.created,
                             v.updated
                         )
                     });
@@ -419,6 +422,134 @@ export namespace DatabaseFixture {
                 }
             }
         }
+    }
 
+    export namespace Feedback {
+        export namespace Insert {
+            export class Success {
+                private constructor() { }
+                static get feedbackModel() {
+                    return new FeedbackModel("a1", "b1", 1, "C1", 1000);
+                }
+
+                static get feedbackEntity() {
+                    return also(new FeedbackEntity(), (e) => {
+                        e.id = this.feedbackModel.id;
+                        e.topicId = this.feedbackModel.topic;
+                        e.rating = this.feedbackModel.rating;
+                        e.reason = this.feedbackModel.reason;
+                        e.lowerReason = this.feedbackModel.reason.toLowerCase();
+                        e.created = this.feedbackModel.created;
+                    });
+                }
+            }
+        }
+
+        export namespace FindById {
+            export class Success {
+                private constructor() { }
+                static get feedbackModel() {
+                    return Insert.Success.feedbackModel;
+                }
+
+                static get feedbackEntity() {
+                    return Insert.Success.feedbackEntity;
+                }
+            }
+
+            export class NotFound {
+                private constructor() { }
+
+                static get feedbackEntity() {
+                    return also(new FeedbackEntity(), (e) => {
+                        e.id = "a2";
+                        e.topicId = "b2";
+                        e.rating = 2;
+                        e.reason = "C2";
+                        e.lowerReason = "c2";
+                        e.created = 2000;
+                    });
+                }
+            }
+        }
+
+        export namespace FindSummaryByTopicId {
+            export class Success {
+                private constructor() { }
+                static get feedbackSummaryModel() {
+                    const result: FeedbackSummaryModel[] = [];
+                    for (let i = 0; i < 3; ++i) {
+                        const index = i + 3;
+                        result.push(
+                            new FeedbackSummaryModel(
+                                `a${index}`,
+                                index,
+                            )
+                        );
+                    }
+                    return result;
+                }
+
+                static get feedbackSummaryEntity() {
+                    return this.feedbackSummaryModel.map(v => also(new FeedbackEntity(), e => {
+                        e.id = v.id;
+                        e.rating = v.rating;
+                    }));
+                }
+            }
+        }
+
+        export namespace FindPage {
+            export class Success {
+                private constructor() { }
+                private static _feedbackEntityList = lazy(() => {
+                    const result: FeedbackEntity[] = [];
+
+                    for (let i = 0; i < 27; ++i) {
+                        const suffix = i + 1;
+                        result.push(
+                            also(new FeedbackEntity(), (e) => {
+                                e.id = `al${suffix}`;
+                                e.topicId = `bl${suffix}`;
+                                e.rating = 1000 * suffix;
+                                e.reason = `Cl${suffix}`;
+                                e.lowerReason = `cl${suffix}`;
+                                e.created = e.rating + 1;
+                            })
+                        );
+                    }
+
+                    return result;
+                });
+
+                static get feedbackEntityList() {
+                    return this._feedbackEntityList.value;
+                }
+
+                static get feedbackModelList() {
+                    return this.feedbackEntityList.map(v => {
+                        return new FeedbackModel(
+                            v.id,
+                            v.topicId,
+                            v.rating,
+                            v.reason,
+                            v.created,
+                        );
+                    });
+                }
+
+                static get pageIndex() {
+                    return 2;
+                }
+
+                static get pageSize() {
+                    return 10;
+                }
+
+                static get pageTotal() {
+                    return 3;
+                }
+            }
+        }
     }
 }

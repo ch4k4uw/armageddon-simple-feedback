@@ -1,4 +1,4 @@
-import { anyNumber, anything, capture, instance, mock, verify, when } from "ts-mockito";
+import { anyNumber, anyString, anything, capture, instance, mock, verify, when } from "ts-mockito";
 import { IDatabase } from "../../../src/infra/database/database";
 import * as Uuid from "uuid";
 import { DataSource, EntityManager, FindOneOptions, Repository, FindOptionsWhere, FindManyOptions, SelectQueryBuilder } from "typeorm";
@@ -12,6 +12,7 @@ import { FeedbackEntity } from "../../../src/infra/database/orm/feedback.entity"
 import { resourceLimits } from "worker_threads";
 import { PagedModel } from "../../../src/infra/database/model/paged-model";
 import { TopicModel } from "../../../src/infra/database/model/topic-model";
+import { FeedbackModel } from "../../../src/infra/database/model/feedback-model";
 
 
 interface IDataSourceSetupOptions {
@@ -216,7 +217,7 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
             db = new DatabaseImpl(instance(dataSource), createIdFn);
         });
 
-        test('should insert a topic', async () => { 
+        test('should insert a topic', async () => {
             await db.insertTopic(
                 DatabaseFixture.Topic.Insert.Success.topicModel
             );
@@ -225,14 +226,14 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
             verify(topicRepo.create(anything())).once();
             verify(topicRepo.save(anything())).once();
 
-            const [ insertEntityParam ] = capture(topicRepo.create).first();
+            const [insertEntityParam] = capture(topicRepo.create).first();
 
-            expect({ ...insertEntityParam }).toEqual({ 
+            expect({ ...insertEntityParam }).toEqual({
                 ...DatabaseFixture.Topic.Insert.Success.topicEntity
             });
         });
 
-        test('should update a topic', async () => { 
+        test('should update a topic', async () => {
             await db.updateTopic(
                 DatabaseFixture.Topic.Update.Success.topicModel
             );
@@ -240,13 +241,13 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
             verify(dataSource.getRepository(anything())).once();
             verify(topicRepo.update(anything(), anything())).once();
 
-            const [ updateIdParam, updateEntityParam ] = capture(topicRepo.update).first();
+            const [updateIdParam, updateEntityParam] = capture(topicRepo.update).first();
 
             expect(updateIdParam).toEqual({
                 id: DatabaseFixture.Topic.Update.Success.topicModel.id
             });
-            expect(updateEntityParam).toEqual({ 
-                ...DatabaseFixture.Topic.Update.Success.topicEntity 
+            expect(updateEntityParam).toEqual({
+                ...DatabaseFixture.Topic.Update.Success.topicEntity
             });
         });
 
@@ -260,7 +261,7 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
         });
 
         describe('Find by id tests', () => {
-            test('should find a topic', async () => { 
+            test('should find a topic', async () => {
                 const result = await db.findTopicById(
                     DatabaseFixture.Topic.FindById.Success.topicModel.id
                 );
@@ -272,7 +273,7 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
                 verify(topicRepo.findOneBy(anything())).once();
             });
 
-            test('shouldn\'t find a topic', async () => { 
+            test('shouldn\'t find a topic', async () => {
                 const result = await db.findTopicById(
                     DatabaseFixture.Topic.FindById.NotFound.topicModel.id
                 );
@@ -284,7 +285,7 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
         });
 
         describe('Find by code tests', () => {
-            test('should find a topic', async () => { 
+            test('should find a topic', async () => {
                 const result = await db.findTopicByCode(
                     DatabaseFixture.Topic.FindByCode.Success.topicModel.id
                 );
@@ -296,7 +297,7 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
                 verify(topicRepo.findOneBy(anything())).once();
             });
 
-            test('shouldn\'t find a topic', async () => { 
+            test('shouldn\'t find a topic', async () => {
                 const result = await db.findTopicById(
                     DatabaseFixture.Topic.FindByCode.NotFound.topicModel.id
                 );
@@ -309,7 +310,7 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
         });
 
         describe('Find exists by title tests', () => {
-            test('should find a topic', async () => { 
+            test('should find a topic', async () => {
                 const result = await db.findTopicExistsByTitle(
                     DatabaseFixture.Topic.FindExistsByTitle.Success.topicEntity.lowerTitle
                 );
@@ -319,7 +320,7 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
                 verify(topicRepo.find(anything())).once();
             });
 
-            test('shouldn\'t find a topic', async () => { 
+            test('shouldn\'t find a topic', async () => {
                 const result = await db.findTopicExistsByTitle(
                     DatabaseFixture.Topic.FindExistsByTitle.NotFound.topicModel.title.toLowerCase()
                 );
@@ -331,7 +332,7 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
 
         });
 
-        test('should find a topic page', async () => { 
+        test('should find a topic page', async () => {
             const result = await db.findTopicPage(
                 DatabaseFixture.Topic.FindPage.Success.pageIndex,
                 DatabaseFixture.Topic.FindPage.Success.pageSize
@@ -339,7 +340,7 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
 
             const pageIndex = DatabaseFixture.Topic.FindPage.Success.pageIndex;
             const pageSize = DatabaseFixture.Topic.FindPage.Success.pageSize;
-            const startOffset = (pageIndex-1) * pageSize;
+            const startOffset = (pageIndex - 1) * pageSize;
             const endOffset = startOffset + pageSize;
 
             expect({ ...result }).toEqual({
@@ -354,13 +355,109 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
 
     });
 
-    /*describe('Feedback tests', () => {
+    describe('Feedback tests', () => {
         beforeEach(() => {
             feedbackRepo = setupFeedbackRepository();
             dataSource = setupDataSource({ feedbackRepositoryMock: feedbackRepo });
             db = new DatabaseImpl(instance(dataSource), createIdFn);
         });
-    });*/
+
+        test('should insert a feedback', async () => {
+            await db.insertFeedback(DatabaseFixture.Feedback.Insert.Success.feedbackModel);
+
+            verify(dataSource.getRepository(anything())).once();
+            verify(feedbackRepo.save(anything())).once();
+
+            const [insertParam] = capture(feedbackRepo.save).first();
+
+            expect({ ...insertParam }).toEqual({
+                ...DatabaseFixture.Feedback.Insert.Success.feedbackEntity
+            });
+        });
+        describe('Find by id tests', () => {
+            test('should find a feedback', async () => {
+                const result = await db.findFeedbackById(
+                    DatabaseFixture.Feedback.FindById.Success.feedbackModel.id
+                );
+
+                expect({ ...result }).toEqual({
+                    ...DatabaseFixture.Feedback.FindById.Success.feedbackModel
+                });
+                verify(dataSource.getRepository(anything())).once();
+                verify(feedbackRepo.findOneBy(anything())).once();
+            });
+
+            test('shouldn\'t find a feedback', async () => {
+                const result = await db.findFeedbackById(
+                    DatabaseFixture.Feedback.FindById.NotFound.feedbackEntity.id
+                );
+
+                expect(result).toBeNull();
+                verify(dataSource.getRepository(anything())).once();
+                verify(feedbackRepo.findOneBy(anything())).once();
+            });
+        });
+
+        describe('Find summary by topic id tests', () => {
+            let qbForSummary: SelectQueryBuilder<FeedbackEntity>;
+            beforeEach(() => {
+                qbForSummary = setupFeedbackSelectQueryBuilderForSummary();
+                feedbackRepo = setupFeedbackRepository(qbForSummary);
+                dataSource = setupDataSource({ feedbackRepositoryMock: feedbackRepo });
+                db = new DatabaseImpl(instance(dataSource), createIdFn);
+            });
+
+            test('should find the summary', async () => {
+                const result = await db.findFeedbackSummariesByTopicId(
+                    "1"
+                );
+
+                expect(result).toEqual(
+                    DatabaseFixture.Feedback.FindSummaryByTopicId.Success.feedbackSummaryModel
+                );
+
+                verify(dataSource.getRepository(anything())).once();
+                verify(feedbackRepo.createQueryBuilder(anyString())).once();
+                verify(qbForSummary.getMany()).once();
+            });
+        });
+
+        describe('Find feedback page tests', () => {
+            let qbForPage: SelectQueryBuilder<FeedbackEntity>;
+            beforeEach(() => {
+                qbForPage = setupFeedbackSelectQueryBuilderForPage();
+                feedbackRepo = setupFeedbackRepository(undefined, qbForPage);
+                dataSource = setupDataSource({ feedbackRepositoryMock: feedbackRepo });
+                db = new DatabaseImpl(instance(dataSource), createIdFn);
+            });
+            test('should find a page', async () => {
+                const result = await db.findFeedbackPage(
+                    "1",
+                    DatabaseFixture.Feedback.FindPage.Success.pageIndex,
+                    DatabaseFixture.Feedback.FindPage.Success.pageSize,
+                    { rating: 1, reason: "test" }
+                );
+
+                const pageIndex = DatabaseFixture.Feedback.FindPage.Success.pageIndex;
+                const pageSize = DatabaseFixture.Feedback.FindPage.Success.pageSize;
+                const startOffset = (pageIndex - 1) * pageSize;
+                const endOffset = startOffset + pageSize;
+
+                expect({ ...result }).toEqual({
+                    ...new PagedModel<FeedbackModel>(
+                        DatabaseFixture.Feedback.FindPage.Success.feedbackModelList.slice(startOffset, endOffset),
+                        pageSize,
+                        pageIndex,
+                        DatabaseFixture.Topic.FindPage.Success.pageTotal,
+                    )
+                });
+
+                verify(dataSource.getRepository(anything())).once();
+                verify(qbForPage.getMany()).once();
+                verify(qbForPage.getCount()).once();
+            });
+        });
+    });
 
     function setupJwRefreshTokenRepository() {
         const result = mock<Repository<JwRefreshTokenEntity>>();
@@ -442,7 +539,7 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
     function setupTopicRepository(selectQueryBuilder?: SelectQueryBuilder<TopicEntity>) {
         const result = mock<Repository<TopicEntity>>();
 
-        when(result.create(anything())).thenCall(async (...args: any[]) => args[0]);
+        when(result.create(anything())).thenCall((...args: any[]) => args[0]);
 
         when(result.save(anything())).thenResolve();
         when(result.update(anything(), anything())).thenResolve();
@@ -471,7 +568,7 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
             if (where instanceof Array) {
                 return [];
             }
-            switch(where?.title) {
+            switch (where?.title) {
                 case DatabaseFixture.Topic.FindExistsByTitle.Success.topicEntity.lowerTitle:
                     return [DatabaseFixture.Topic.FindExistsByTitle.Success.topicEntity];
                 default:
@@ -485,7 +582,7 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
             if (where instanceof Array) {
                 return null;
             }
-            switch(where?.title) {
+            switch (where?.title) {
                 case DatabaseFixture.Topic.FindExistsByCode.Success.topicEntity.title:
                     return DatabaseFixture.Topic.FindExistsByCode.Success.topicEntity;
                 default:
@@ -500,9 +597,6 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
         return result;
     }
 
-    const topicPageSize = 10;
-    const topicPageIndex = 2;
-    const topicPageTotal = 3;
     function setupTopicSelectQueryBuilder() {
         const result = mock<SelectQueryBuilder<TopicEntity>>();
 
@@ -511,10 +605,81 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
         when(result.offset(anyNumber())).thenCall(() => instance(result));
         const pageIndex = DatabaseFixture.Topic.FindPage.Success.pageIndex;
         const pageSize = DatabaseFixture.Topic.FindPage.Success.pageSize;
-        const startOffset = (pageIndex-1) * pageSize;
+        const startOffset = (pageIndex - 1) * pageSize;
         const endOffset = startOffset + pageSize;
         when(result.getMany()).thenResolve(
             DatabaseFixture.Topic.FindPage.Success.topicEntityList.slice(
+                startOffset,
+                endOffset,
+            )
+        );
+        when(result.getCount()).thenResolve(
+            DatabaseFixture.Topic.FindPage.Success.topicEntityList.length
+        )
+
+        return result;
+    }
+
+    function setupFeedbackRepository(
+        qbForSummary?: SelectQueryBuilder<FeedbackEntity>,
+        qbForPage?: SelectQueryBuilder<FeedbackEntity>,
+    ) {
+        const result = mock<Repository<FeedbackEntity>>();
+
+        when(result.create(anything())).thenCall((...args: any[]) => args[0]);
+
+        when(result.save(anything())).thenResolve();
+
+        if (qbForSummary) {
+            when(result.createQueryBuilder(anything())).thenCall(() => instance(qbForSummary));
+        }
+
+        if (qbForPage) {
+            when(result.createQueryBuilder(anything())).thenCall(() => instance(qbForPage));
+        }
+
+        when(result.findOneBy(anything())).thenCall(async (...args: any[]) => {
+            if (args[0] instanceof Array) {
+                return null;
+            }
+            const where = args[0] as FindOptionsWhere<FeedbackEntity>;
+            switch (where.id) {
+                case DatabaseFixture.Feedback.FindById.Success.feedbackEntity.id:
+                    return DatabaseFixture.Feedback.FindById.Success.feedbackEntity;
+            }
+            return null;
+        });
+
+        return result;
+    }
+
+    function setupFeedbackSelectQueryBuilderForSummary() {
+        const result = mock<SelectQueryBuilder<FeedbackEntity>>();
+
+        when(result.select(anyString())).thenCall(() => instance(result));
+        when(result.where(anything(), anything())).thenCall(() => instance(result));
+        when(result.getMany()).thenResolve(
+            DatabaseFixture.Feedback.FindSummaryByTopicId.Success.feedbackSummaryEntity
+        );
+
+        return result;
+    }
+
+    function setupFeedbackSelectQueryBuilderForPage() {
+        const result = mock<SelectQueryBuilder<FeedbackEntity>>();
+
+        when(result.where(anyString(), anything())).thenCall(() => instance(result));
+        when(result.orWhere(anyString(), anything())).thenCall(() => instance(result));
+        when(result.andWhere(anyString(), anything())).thenCall(() => instance(result));
+        when(result.limit(anyNumber())).thenCall(() => instance(result));
+        when(result.offset(anyNumber())).thenCall(() => instance(result));
+        when(result.orderBy(anyString(), anyString())).thenCall(() => instance(result));
+        const pageIndex = DatabaseFixture.Feedback.FindPage.Success.pageIndex;
+        const pageSize = DatabaseFixture.Feedback.FindPage.Success.pageSize;
+        const startOffset = (pageIndex - 1) * pageSize;
+        const endOffset = startOffset + pageSize;
+        when(result.getMany()).thenResolve(
+            DatabaseFixture.Feedback.FindPage.Success.feedbackEntityList.slice(
                 startOffset,
                 endOffset,
             )
