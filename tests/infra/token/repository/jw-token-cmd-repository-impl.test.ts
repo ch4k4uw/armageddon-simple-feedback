@@ -65,10 +65,10 @@ describe('Jw token repository tests', () => {
             const result = await repo.updateAccessToken(TokenRepositoryFixture.UpdateAccess.Success.jwToken);
             expect(result).toEqual(TokenRepositoryFixture.UpdateAccess.Success.rawJwToken);
             verify(database.createId()).once();
-            verify(database.findJwRefreshToken(anyString()))
+            verify(database.findJwRefreshTokenById(anyString()))
                 .calledAfter(database.createId());
             verify(database.findUserById(anyString()))
-                .calledAfter(database.findJwRefreshToken(anyString()));
+                .calledAfter(database.findJwRefreshTokenById(anyString()));
             verify(database.insertAndUpdateRefreshToken(anything(), anything()))
                 .calledAfter(database.findUserById(anyString()));
 
@@ -84,7 +84,7 @@ describe('Jw token repository tests', () => {
         }, (err) => {
             expect(err).toBeInstanceOf(InvalidRefreshTokenError);
             verify(database.createId()).once();
-            verify(database.findJwRefreshToken(anyString())).once();
+            verify(database.findJwRefreshTokenById(anyString())).once();
             verify(database.findUserById(anyString())).never();
             verify(database.insertAndUpdateRefreshToken(anything(), anything())).never();
         });
@@ -94,7 +94,7 @@ describe('Jw token repository tests', () => {
         }, (err) => {
             expect(err).toBeInstanceOf(InvalidRefreshTokenError);
             verify(database.createId()).once();
-            verify(database.findJwRefreshToken(anyString())).once();
+            verify(database.findJwRefreshTokenById(anyString())).once();
             verify(database.findUserById(anyString())).never();
             verify(database.insertAndUpdateRefreshToken(anything(), anything())).never();
         });
@@ -104,7 +104,7 @@ describe('Jw token repository tests', () => {
         }, (err) => {
             expect(err).toBeInstanceOf(UserNotFoundError);
             verify(database.createId()).once();
-            verify(database.findJwRefreshToken(anyString())).once();
+            verify(database.findJwRefreshTokenById(anyString())).once();
             verify(database.findUserById(anyString())).once();
             verify(database.insertAndUpdateRefreshToken(anything(), anything())).never();
         });
@@ -120,7 +120,7 @@ describe('Jw token repository tests', () => {
 
         test('should remove a refresh token', async () => {
             await repo.removeRefreshToken(TokenRepositoryFixture.RemoveRefresh.Success.jwToken);
-            verify(database.findJwRefreshToken(anyString())).once();
+            verify(database.findJwRefreshTokenById(anyString())).once();
             verify(database.updateJwRefreshToken(anything())).once();
 
             const [jwRefreshTokenModel] = capture(database.updateJwRefreshToken).last();
@@ -134,7 +134,7 @@ describe('Jw token repository tests', () => {
             await repo.removeRefreshToken(TokenRepositoryFixture.RemoveRefresh.InvalidRefreshToken1.jwToken);
         }, (err) => {
             expect(err).toBeInstanceOf(InvalidRefreshTokenError);
-            verify(database.findJwRefreshToken(anyString())).once();
+            verify(database.findJwRefreshTokenById(anyString())).once();
             verify(database.updateJwRefreshToken(anything())).never();
         });
 
@@ -142,7 +142,7 @@ describe('Jw token repository tests', () => {
             await repo.removeRefreshToken(TokenRepositoryFixture.RemoveRefresh.InvalidRefreshToken2.jwToken);
         }, (err) => {
             expect(err).toBeInstanceOf(InvalidRefreshTokenError);
-            verify(database.findJwRefreshToken(anyString())).once();
+            verify(database.findJwRefreshTokenById(anyString())).once();
             verify(database.updateJwRefreshToken(anything())).never();
         });
     });
@@ -173,9 +173,9 @@ describe('Jw token repository tests', () => {
         test('should find a refresh token', async () => {
             const result = await repo.findRefreshTokenByRaw(TokenRepositoryFixture.FindRefreshByRaw.Success.rawJwToken);
             expect(result).toEqual({ ...TokenRepositoryFixture.FindRefreshByRaw.Success.jwToken });
-            verify(tokenSvc.verifyRefreshToken(anything())).calledBefore(database.findJwRefreshToken(anyString()));
-            verify(database.findJwRefreshToken(anyString())).calledBefore(database.findUserById(anyString()));
-            verify(database.findUserById(anyString())).calledAfter(database.findJwRefreshToken(anyString()));
+            verify(tokenSvc.verifyRefreshToken(anything())).calledBefore(database.findJwRefreshTokenById(anyString()));
+            verify(database.findJwRefreshTokenById(anyString())).calledBefore(database.findUserById(anyString()));
+            verify(database.findUserById(anyString())).calledAfter(database.findJwRefreshTokenById(anyString()));
         });
 
         reject('should reject with invalid refresh token error 1', async () => {
@@ -183,7 +183,7 @@ describe('Jw token repository tests', () => {
         }, (err) => {
             expect(err).toBeInstanceOf(InvalidRefreshTokenError);
             verify(tokenSvc.verifyRefreshToken(anything())).once();
-            verify(database.findJwRefreshToken(anyString())).once();
+            verify(database.findJwRefreshTokenById(anyString())).once();
             verify(database.findUserById(anyString())).never();
         });
 
@@ -192,7 +192,7 @@ describe('Jw token repository tests', () => {
         }, (err) => {
             expect(err).toBeInstanceOf(InvalidRefreshTokenError);
             verify(tokenSvc.verifyRefreshToken(anything())).once();
-            verify(database.findJwRefreshToken(anyString())).once();
+            verify(database.findJwRefreshTokenById(anyString())).once();
             verify(database.findUserById(anyString())).never();
         });
 
@@ -201,7 +201,7 @@ describe('Jw token repository tests', () => {
         }, (err) => {
             expect(err).toBeInstanceOf(UserNotFoundError);
             verify(tokenSvc.verifyRefreshToken(anything())).once();
-            verify(database.findJwRefreshToken(anyString())).once();
+            verify(database.findJwRefreshTokenById(anyString())).once();
             verify(database.findUserById(anyString())).once();
         });
     });

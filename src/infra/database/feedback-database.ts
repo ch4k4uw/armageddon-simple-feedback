@@ -9,7 +9,7 @@ export interface IFeedbackQueryOptions {
 
 export interface IFeedbackDatabase {
     insertFeedback(feedback: FeedbackModel): Promise<void>;
-    findFeedbackById(id: string): Promise<FeedbackModel>;
+    findFeedbackById(id: string): Promise<FeedbackModel|null>;
     findFeedbackSummariesByTopicId(id: string): Promise<FeedbackSummaryModel[]>;
     findFeedbackPage(topic: string, index: number, size: number, options?: IFeedbackQueryOptions): Promise<PagedModel<FeedbackModel>>;
 }

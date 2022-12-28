@@ -3,3 +3,7 @@ node_modules
 .vscode
 coverage
 .keys
+.idea
+tmp
+temp
+.env

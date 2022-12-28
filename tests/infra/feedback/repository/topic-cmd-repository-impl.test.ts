@@ -1,4 +1,3 @@
-import { report } from "process";
 import { anyNumber, anyString, anything, instance, verify } from "ts-mockito";
 import { TopicDuplicationError } from "../../../../src/domain/feedback/data/topic-duplication-error";
 import { TopicNotFoundError } from "../../../../src/domain/feedback/data/topic-not-found-error";
@@ -32,7 +31,7 @@ describe('Topic repository tests', () => {
             verify(database.dateTime).once();
             verify(database.createId()).once();
             verify(nanoIdSvc.createId()).times(4);
-            verify(database.findTopicCodeExists(anyString())).times(4);
+            verify(database.findTopicExistsByCode(anyString())).times(4);
             verify(database.insertTopic(anything())).once();
         });
 
@@ -44,7 +43,7 @@ describe('Topic repository tests', () => {
             verify(database.dateTime).never();
             verify(database.createId()).never();
             verify(nanoIdSvc.createId()).never();
-            verify(database.findTopicCodeExists(anyString())).never();
+            verify(database.findTopicExistsByCode(anyString())).never();
             verify(database.insertTopic(anything())).never();
         });
     });

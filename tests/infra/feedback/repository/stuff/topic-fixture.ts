@@ -176,10 +176,10 @@ export namespace TopicFixture {
         when(database.findTopicExistsByTitle(Insert.Success.topicDomain.title)).thenResolve(false);
         when(database.findTopicExistsByTitle(Insert.Duplication.topicDomain.title)).thenResolve(true);
 
-        when(database.findTopicCodeExists("code1")).thenResolve(true);
-        when(database.findTopicCodeExists("code2")).thenResolve(true);
-        when(database.findTopicCodeExists("code3")).thenResolve(true);
-        when(database.findTopicCodeExists("code4")).thenResolve(false);
+        when(database.findTopicExistsByCode("code1")).thenResolve(true);
+        when(database.findTopicExistsByCode("code2")).thenResolve(true);
+        when(database.findTopicExistsByCode("code3")).thenResolve(true);
+        when(database.findTopicExistsByCode("code4")).thenResolve(false);
 
         when(database.insertTopic(anything())).thenResolve();
 
