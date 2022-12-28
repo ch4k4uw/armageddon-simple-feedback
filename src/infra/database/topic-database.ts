@@ -14,5 +14,5 @@ export interface ITopicDatabase {
     findTopicByCode(code: string): Promise<TopicModel|null>;
     findTopicExistsByTitle(title: string): Promise<boolean>;
     findTopicExistsByCode(code: string): Promise<boolean>;
-    findTopicPage(index: number, size: number, options?: ITopicQueryOptions): Promise<PagedModel<TopicModel|null>>;
+    findTopicPage(index: number, size: number, options?: ITopicQueryOptions): Promise<PagedModel<TopicModel>>;
 }
