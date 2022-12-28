@@ -35,6 +35,7 @@ export class TopicEntity {
     expires: number;
 
     @Column("integer")
+    @Index()
     created: number;
 
     @Column("integer")

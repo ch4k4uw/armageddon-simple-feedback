@@ -122,6 +122,7 @@ export class DatabaseImpl implements IDatabase {
             .where(`${title} OR ${description}`, whereParams)
             .limit(size)
             .offset((index - 1) * size)
+            .orderBy("t.created", "DESC")
             .getMany();
 
         const count = await repo.createQueryBuilder("t")

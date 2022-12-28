@@ -603,6 +603,7 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
         when(result.where(anything(), anything())).thenCall(() => instance(result));
         when(result.limit(anyNumber())).thenCall(() => instance(result));
         when(result.offset(anyNumber())).thenCall(() => instance(result));
+        when(result.orderBy(anyString(), anyString())).thenCall(() => instance(result));
         const pageIndex = DatabaseFixture.Topic.FindPage.Success.pageIndex;
         const pageSize = DatabaseFixture.Topic.FindPage.Success.pageSize;
         const startOffset = (pageIndex - 1) * pageSize;

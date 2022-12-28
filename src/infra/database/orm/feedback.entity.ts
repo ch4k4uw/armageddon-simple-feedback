@@ -26,5 +26,6 @@ export class FeedbackEntity {
     lowerReason: string;
 
     @Column("integer")
+    @Index()
     created: number;
 }
