@@ -138,7 +138,7 @@ export class DatabaseImpl implements IDatabase {
     async insertFeedback(feedback: FeedbackModel): Promise<void> {
         const repo = this.dataSource.getRepository(FeedbackEntity);
         const newData = repo.create(feedbackModelToEntity(feedback));
-        newData.lowerReason = feedback.reason.toLowerCase();
+        console.log(newData);
         await repo.save(newData);
     }
 
@@ -151,7 +151,7 @@ export class DatabaseImpl implements IDatabase {
         const repo = this.dataSource.getRepository(FeedbackEntity);
         const many = await repo.createQueryBuilder("f")
             .select("f.id, f.rating")
-            .where("f.topicId=:id", { id })
+            .where("f.topicId=':id'", { id })
             .getMany();
         return many.map(v => new FeedbackSummaryModel(v.id, v.rating));
     }
@@ -160,29 +160,28 @@ export class DatabaseImpl implements IDatabase {
         topic: string, index: number, size: number, options?: IFeedbackQueryOptions
     ): Promise<PagedModel<FeedbackModel>> {
         const repo = this.dataSource.getRepository(FeedbackEntity);
+        const id = `f.topicId=':id'`;
         const reason = `f.lowerReason LIKE '%:reason%'`;
-        const rating = `f.rating=:rading`;
+        const rating = `f.rating=:rating`;
         let qb = repo.createQueryBuilder("f");
         if (options?.reason !== undefined || options?.rating !== undefined) {
             let addOr = false;
             if (options?.reason !== undefined) {
-                qb = qb.where(`${reason}`)
+                qb = qb.where(`${reason}`, { reason: options?.reason })
                 addOr = true;
             }
             if (options?.rating !== undefined) {
-                const clause = `${rating}`;
-                qb = addOr ? qb.orWhere(clause) : qb.where(clause);
+                const params = { rating: options?.rating };
+                qb = addOr ? qb.orWhere(rating, params) : qb.where(rating, params);
+                addOr = true;
             }
+            const params = { id: topic };
+            qb = addOr ? qb.andWhere(id, params) : qb.where(id, params);
         }
-        qb = qb.limit(size)
-            .offset((index - 1) * size);
-        if (options?.reason !== undefined) {
-            qb = qb.setParameter("reason", options?.reason);
-        }
-        if (options?.rating !== undefined) {
-            qb = qb.setParameter("rating", options?.rating);
-        }
-        const many = await qb.getMany();
+        const many = await qb.limit(size)
+            .offset((index - 1) * size)
+            .orderBy("f.created", "DESC")
+            .getMany();
 
         const count = await repo.createQueryBuilder("f")
             .getCount();
