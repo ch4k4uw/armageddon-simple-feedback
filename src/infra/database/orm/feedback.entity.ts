@@ -10,7 +10,7 @@ export class FeedbackEntity {
     @Column("text")
     topicId: string;
 
-    @ManyToOne(() => TopicEntity, topic => topic.feedback)
+    @ManyToOne(() => TopicEntity, topic => topic.feedback, { onDelete: "CASCADE" })
     @JoinColumn({name: "topicId"})
     topic: TopicEntity;
 

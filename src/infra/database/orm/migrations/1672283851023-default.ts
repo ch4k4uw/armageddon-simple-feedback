@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class default1672260061434 implements MigrationInterface {
-    name = 'default1672260061434'
+export class default1672283851023 implements MigrationInterface {
+    name = 'default1672283851023'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE "jw-refresh-token" ("id" text PRIMARY KEY NOT NULL, "removed" boolean NOT NULL, "created" integer NOT NULL, "updated" integer NOT NULL, "userId" varchar)`);
@@ -30,7 +30,7 @@ export class default1672260061434 implements MigrationInterface {
         await queryRunner.query(`DROP INDEX "IDX_39932af13cd5ff2f000d3147f4"`);
         await queryRunner.query(`DROP INDEX "IDX_b6bbab6ba1bc3e1d6a483c4655"`);
         await queryRunner.query(`DROP INDEX "IDX_7faa88fd336dd60b0d92497179"`);
-        await queryRunner.query(`CREATE TABLE "temporary_feedback" ("id" text PRIMARY KEY NOT NULL, "topicId" text NOT NULL, "rating" integer NOT NULL, "reason" text NOT NULL, "lowerReason" text NOT NULL, "created" integer NOT NULL, CONSTRAINT "FK_0757c5b400f6d2e77e655a366a8" FOREIGN KEY ("topicId") REFERENCES "topic" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION)`);
+        await queryRunner.query(`CREATE TABLE "temporary_feedback" ("id" text PRIMARY KEY NOT NULL, "topicId" text NOT NULL, "rating" integer NOT NULL, "reason" text NOT NULL, "lowerReason" text NOT NULL, "created" integer NOT NULL, CONSTRAINT "FK_0757c5b400f6d2e77e655a366a8" FOREIGN KEY ("topicId") REFERENCES "topic" ("id") ON DELETE CASCADE ON UPDATE NO ACTION)`);
         await queryRunner.query(`INSERT INTO "temporary_feedback"("id", "topicId", "rating", "reason", "lowerReason", "created") SELECT "id", "topicId", "rating", "reason", "lowerReason", "created" FROM "feedback"`);
         await queryRunner.query(`DROP TABLE "feedback"`);
         await queryRunner.query(`ALTER TABLE "temporary_feedback" RENAME TO "feedback"`);

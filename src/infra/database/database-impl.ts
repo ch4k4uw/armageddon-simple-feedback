@@ -115,9 +115,12 @@ export class DatabaseImpl implements IDatabase {
         index: number, size: number, options?: ITopicQueryOptions
     ): Promise<PagedModel<TopicModel>> {
         const repo = this.dataSource.getRepository(TopicEntity);
-        const title = `t.lowerTitle LIKE '%:title%'`;
-        const description = `t.lowerDescription LIKE '%:description%'`;
-        const whereParams = { title: options?.title || "", description: options?.description || "" };
+        const title = `t.lowerTitle LIKE :title`;
+        const description = `t.lowerDescription LIKE :description`;
+        const whereParams = { 
+            title: `%${options?.title?.toLowerCase() || ""}%`, 
+            description: `%${options?.description?.toLowerCase() || ""}%` 
+        };
         const many = await repo.createQueryBuilder("t")
             .where(`${title} OR ${description}`, whereParams)
             .limit(size)
@@ -126,6 +129,7 @@ export class DatabaseImpl implements IDatabase {
             .getMany();
 
         const count = await repo.createQueryBuilder("t")
+            .where(`${title} OR ${description}`, whereParams)
             .getCount();
 
         return new PagedModel<TopicModel>(
@@ -139,7 +143,6 @@ export class DatabaseImpl implements IDatabase {
     async insertFeedback(feedback: FeedbackModel): Promise<void> {
         const repo = this.dataSource.getRepository(FeedbackEntity);
         const newData = repo.create(feedbackModelToEntity(feedback));
-        console.log(newData);
         await repo.save(newData);
     }
 
@@ -151,8 +154,8 @@ export class DatabaseImpl implements IDatabase {
     async findFeedbackSummariesByTopicId(id: string): Promise<FeedbackSummaryModel[]> {
         const repo = this.dataSource.getRepository(FeedbackEntity);
         const many = await repo.createQueryBuilder("f")
-            .select("f.id, f.rating")
-            .where("f.topicId=':id'", { id })
+            .select(["f.id", "f.rating"])
+            .where("f.topicId=:id", { id })
             .getMany();
         return many.map(v => new FeedbackSummaryModel(v.id, v.rating));
     }
@@ -161,31 +164,37 @@ export class DatabaseImpl implements IDatabase {
         topic: string, index: number, size: number, options?: IFeedbackQueryOptions
     ): Promise<PagedModel<FeedbackModel>> {
         const repo = this.dataSource.getRepository(FeedbackEntity);
-        const id = `f.topicId=':id'`;
-        const reason = `f.lowerReason LIKE '%:reason%'`;
+        const id = `f.topicId=:id`;
+        const reason = `f.lowerReason LIKE :reason`;
         const rating = `f.rating=:rating`;
         let qb = repo.createQueryBuilder("f");
+        let countQb = repo.createQueryBuilder("f");
+        let addOr = false;
         if (options?.reason !== undefined || options?.rating !== undefined) {
-            let addOr = false;
             if (options?.reason !== undefined) {
-                qb = qb.where(`${reason}`, { reason: options?.reason })
+                const params = { reason: `%${options?.reason.toLowerCase() || ""}%` };
+                qb = qb.where(`${reason}`, params);
+                countQb = countQb.where(`${reason}`, params);
                 addOr = true;
             }
             if (options?.rating !== undefined) {
                 const params = { rating: options?.rating };
                 qb = addOr ? qb.orWhere(rating, params) : qb.where(rating, params);
+                countQb = addOr ? countQb.orWhere(rating, params) : countQb.where(rating, params);
                 addOr = true;
             }
-            const params = { id: topic };
-            qb = addOr ? qb.andWhere(id, params) : qb.where(id, params);
         }
+
+        const params = { id: topic };
+        qb = addOr ? qb.andWhere(id, params) : qb.where(id, params);
+        countQb = addOr ? countQb.andWhere(id, params) : countQb.where(id, params);
+
         const many = await qb.limit(size)
             .offset((index - 1) * size)
             .orderBy("f.created", "DESC")
             .getMany();
 
-        const count = await repo.createQueryBuilder("f")
-            .getCount();
+        const count = await countQb.getCount();
 
         return new PagedModel<FeedbackModel>(
             many.map(v => feedbackEntityToModelNotUndef(v)),
@@ -199,8 +208,9 @@ export class DatabaseImpl implements IDatabase {
 }
 
 const jwRefreshTokenModelToEntity = (model: JwRefreshTokenModel) => {
-     return {
+    return {
         id: model.id,
+        user: userModelToEntity(model.user),
         removed: model.removed,
         created: model.created,
         updated: model.updated,

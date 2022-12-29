@@ -4,18 +4,18 @@ import { UserEntity } from "./user.entity"
 @Entity("jw-refresh-token")
 export class JwRefreshTokenEntity {
     @PrimaryColumn("text")
-    public id: string
+    id: string
 
     @ManyToOne(() => UserEntity, user => user.tokens)
     @JoinColumn({name: "userId"})
-    public user: UserEntity;
+    user: UserEntity;
 
     @Column("boolean")
-    public removed: boolean;
+    removed: boolean;
 
     @Column("integer")
-    public created: number;
+    created: number;
 
     @Column("integer")
-    public updated: number;
+    updated: number;
 }
