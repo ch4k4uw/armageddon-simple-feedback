@@ -1,18 +1,17 @@
 import { anyNumber, anyString, anything, capture, instance, mock, verify, when } from "ts-mockito";
-import { IDatabase } from "../../../src/infra/database/database";
+import { DataSource, EntityManager, FindManyOptions, FindOneOptions, FindOptionsWhere, Repository, SelectQueryBuilder } from "typeorm";
 import * as Uuid from "uuid";
-import { DataSource, EntityManager, FindOneOptions, Repository, FindOptionsWhere, FindManyOptions, SelectQueryBuilder } from "typeorm";
+import { IDatabase } from "../../../src/infra/database/database";
 import { DatabaseImpl } from "../../../src/infra/database/database-impl";
-import { JwRefreshTokenEntity } from "../../../src/infra/database/orm/jw-refresh-token.entity";
-import { DatabaseFixture } from "./stuff/database-fixture";
-import { UserEntity } from "../../../src/infra/database/orm/user.entity";
-import { CredentialEntity } from "../../../src/infra/database/orm/credential.entity";
-import { TopicEntity } from "../../../src/infra/database/orm/topic.entity";
-import { FeedbackEntity } from "../../../src/infra/database/orm/feedback.entity";
-import { resourceLimits } from "worker_threads";
+import { FeedbackModel } from "../../../src/infra/database/model/feedback-model";
 import { PagedModel } from "../../../src/infra/database/model/paged-model";
 import { TopicModel } from "../../../src/infra/database/model/topic-model";
-import { FeedbackModel } from "../../../src/infra/database/model/feedback-model";
+import { CredentialEntity } from "../../../src/infra/database/orm/credential.entity";
+import { FeedbackEntity } from "../../../src/infra/database/orm/feedback.entity";
+import { JwRefreshTokenEntity } from "../../../src/infra/database/orm/jw-refresh-token.entity";
+import { TopicEntity } from "../../../src/infra/database/orm/topic.entity";
+import { UserEntity } from "../../../src/infra/database/orm/user.entity";
+import { DatabaseFixture } from "./stuff/database-fixture";
 
 
 interface IDataSourceSetupOptions {
@@ -657,7 +656,7 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
     function setupFeedbackSelectQueryBuilderForSummary() {
         const result = mock<SelectQueryBuilder<FeedbackEntity>>();
 
-        when(result.select(anyString())).thenCall(() => instance(result));
+        when(result.select(anything())).thenCall(() => instance(result));
         when(result.where(anything(), anything())).thenCall(() => instance(result));
         when(result.getMany()).thenResolve(
             DatabaseFixture.Feedback.FindSummaryByTopicId.Success.feedbackSummaryEntity

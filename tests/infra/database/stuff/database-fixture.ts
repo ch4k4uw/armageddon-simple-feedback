@@ -58,6 +58,7 @@ export namespace DatabaseFixture {
                 static get jwRefreshTokenEntity() {
                     return also(new JwRefreshTokenEntity(), (e) => {
                         e.id = this.jwRefreshTokenModel.id;
+                        e.user = Common.userEntity1;
                         e.removed = this.jwRefreshTokenModel.removed;
                         e.created = this.jwRefreshTokenModel.created;
                         e.updated = this.jwRefreshTokenModel.updated;
@@ -76,6 +77,7 @@ export namespace DatabaseFixture {
                 static get jwRefreshTokenEntity1() {
                     return also(new JwRefreshTokenEntity(), (e) => {
                         e.id = this.jwRefreshTokenModel1.id;
+                        e.user = Common.userEntity1;
                         e.removed = this.jwRefreshTokenModel1.removed;
                         e.created = this.jwRefreshTokenModel1.created;
                         e.updated = this.jwRefreshTokenModel1.updated;
@@ -83,12 +85,13 @@ export namespace DatabaseFixture {
                 }
 
                 static get jwRefreshTokenModel2() {
-                    return new JwRefreshTokenModel("a3", Common.userModel1, false, 3000, 3001);
+                    return new JwRefreshTokenModel("a3", Common.userModel2, false, 3000, 3001);
                 }
 
                 static get jwRefreshTokenEntity2() {
                     return also(new JwRefreshTokenEntity(), (e) => {
                         e.id = this.jwRefreshTokenModel2.id;
+                        e.user = Common.userEntity2;
                         e.removed = this.jwRefreshTokenModel2.removed;
                         e.created = this.jwRefreshTokenModel2.created;
                         e.updated = this.jwRefreshTokenModel2.updated;
@@ -133,6 +136,7 @@ export namespace DatabaseFixture {
                 static get jwRefreshTokenEntity() {
                     return also(new JwRefreshTokenEntity(), (e) => {
                         e.id = this.jwRefreshTokenModel.id;
+                        e.user = Common.userEntity1;
                         e.removed = this.jwRefreshTokenModel.removed;
                         e.created = this.jwRefreshTokenModel.created;
                         e.updated = this.jwRefreshTokenModel.updated;
