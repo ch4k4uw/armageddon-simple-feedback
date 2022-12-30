@@ -1,9 +1,13 @@
+import { Inject, Service } from "typedi";
 import { TopicNotFoundError } from "../../../domain/feedback/data/topic-not-found-error";
 import { Topic } from "../../../domain/feedback/entity/topic";
 import { ITopicRepository } from "../../../domain/feedback/repository/topic-repository";
+import { IoCId } from "../../../ioc/ioc-id";
 
+@Service()
 export class FindTopicByCodeApp {
     constructor(
+        @Inject(IoCId.Infra.TOPIC_REPOSITORY)
         private topicRepository: ITopicRepository,
     ) { }
 

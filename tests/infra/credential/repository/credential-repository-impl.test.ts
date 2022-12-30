@@ -1,4 +1,4 @@
-import { anyString, anything, instance, mock, verify, when } from "ts-mockito";
+import { anyString, instance, mock, verify, when } from "ts-mockito";
 import { Credential } from "../../../../src/domain/credential/data/credential";
 import { InvalidUserOrPasswordError } from "../../../../src/domain/credential/data/invalid-login-or-password-error";
 import { Role } from "../../../../src/domain/credential/data/role";

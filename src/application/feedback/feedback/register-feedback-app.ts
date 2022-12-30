@@ -1,12 +1,16 @@
+import { Inject, Service } from "typedi";
 import { FeedbackConstants } from "../../../domain/feedback/data/feedback-constants";
 import { RatingOutOfRangeError } from "../../../domain/feedback/data/rating-out-of-range-error";
 import { ReasonLengthOverflow } from "../../../domain/feedback/data/reason-length-overflow-error";
 import { Feedback } from "../../../domain/feedback/entity/feedback";
 import { IFeedbackCmdRepository } from "../../../domain/feedback/repository/feedback-cmd-repository";
+import { IoCId } from "../../../ioc/ioc-id";
 import { FeedbackRegistration } from "./data/feedback-registration";
 
+@Service()
 export class RegisterFeedbackApp {
     constructor(
+        @Inject(IoCId.Infra.FEEDBACK_CMD_REPOSITORY)
         private feedbackRepository: IFeedbackCmdRepository,
     ) { }
 

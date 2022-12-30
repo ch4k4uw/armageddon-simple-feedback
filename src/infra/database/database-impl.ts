@@ -1,6 +1,9 @@
-import { DataSource, Entity, FindOptionsWhere } from "typeorm";
+import { Inject } from "typedi";
+import { DataSource } from "typeorm";
+import * as Uuid from "uuid";
 import { also } from "../../domain/common/service/also";
 import { Role } from "../../domain/credential/data/role";
+import { IoCId } from "../../ioc/ioc-id";
 import { IDatabase } from "./database";
 import { IFeedbackQueryOptions } from "./feedback-database";
 import { CredentialModel } from "./model/credential-model";
@@ -17,8 +20,15 @@ import { TopicEntity } from "./orm/topic.entity";
 import { UserEntity } from "./orm/user.entity";
 import { ITopicQueryOptions } from "./topic-database";
 
+export const defaultCreateIdFn = async () => Uuid.v4();
+
 export class DatabaseImpl implements IDatabase {
-    constructor(private dataSource: DataSource, private createIdFn: () => Promise<string>) { }
+    constructor(
+        @Inject(IoCId.Infra.DATA_SOURCE) 
+        private readonly dataSource: DataSource,
+        @Inject(IoCId.Infra.DATABASE_ID_CREATOR) 
+        private readonly createIdFn: () => Promise<string> = defaultCreateIdFn,
+    ) { }
 
     async createId(): Promise<string> {
         return await this.createIdFn();
@@ -117,9 +127,9 @@ export class DatabaseImpl implements IDatabase {
         const repo = this.dataSource.getRepository(TopicEntity);
         const title = `t.lowerTitle LIKE :title`;
         const description = `t.lowerDescription LIKE :description`;
-        const whereParams = { 
-            title: `%${options?.title?.toLowerCase() || ""}%`, 
-            description: `%${options?.description?.toLowerCase() || ""}%` 
+        const whereParams = {
+            title: `%${options?.title?.toLowerCase() || ""}%`,
+            description: `%${options?.description?.toLowerCase() || ""}%`
         };
         const many = await repo.createQueryBuilder("t")
             .where(`${title} OR ${description}`, whereParams)

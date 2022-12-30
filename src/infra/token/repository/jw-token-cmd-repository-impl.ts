@@ -1,8 +1,10 @@
+import { Inject } from "typedi";
 import { UserNotFoundError } from "../../../domain/common/data/user-not-found-error";
 import { InvalidRefreshTokenError } from "../../../domain/token/data/invalid-refresh-token-error";
 import { RawJwToken } from "../../../domain/token/data/raw-jw-token";
 import { JwToken } from "../../../domain/token/entity/jw-token";
 import { IJwTokenCmdRepository } from "../../../domain/token/repository/jw-token-cmd-repository";
+import { IoCId } from "../../../ioc/ioc-id";
 import { IDatabase } from "../../database/database";
 import { JwRefreshTokenModel } from "../../database/model/jw-refresh-token-model";
 import { IJwTokenService } from "../service/jw-token-service";
@@ -11,7 +13,9 @@ import { JwRefreshTokenPayloadModel } from "../service/model/jw-refresh-token-pa
 
 export class JwTokenCmdRepositoryImpl implements IJwTokenCmdRepository {
     constructor(
+        @Inject(IoCId.Infra.DATABASE) 
         private database: IDatabase,
+        @Inject(IoCId.Infra.JW_TOKEN_SVC) 
         private jwTokenSvc: IJwTokenService,
     ) { }
 

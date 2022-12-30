@@ -1,3 +1,4 @@
+import { Inject } from "typedi";
 import { FeedbackConstants } from "../../../domain/feedback/data/feedback-constants";
 import { TopicDuplicationError } from "../../../domain/feedback/data/topic-duplication-error";
 import { TopicNotFoundError } from "../../../domain/feedback/data/topic-not-found-error";
@@ -5,13 +6,19 @@ import { TopicPage } from "../../../domain/feedback/data/topic-page";
 import { TopicSummary } from "../../../domain/feedback/data/topic-summary";
 import { Topic } from "../../../domain/feedback/entity/topic";
 import { ITopicCmdRepository } from "../../../domain/feedback/repository/topic-cmd-repository";
+import { IoCId } from "../../../ioc/ioc-id";
 import { IDatabase } from "../../database/database";
 import { TopicModel } from "../../database/model/topic-model";
 import { INanoIdService } from "../service/nano-id-service";
 import { FeedbackInfraConstants } from "./feedback-infra-constants";
 
 export class TopicCmdRepositoryImpl implements ITopicCmdRepository {
-    constructor(private database: IDatabase, private nanoIdSvc: INanoIdService) { }
+    constructor(
+        @Inject(IoCId.Infra.DATABASE)
+        private database: IDatabase,
+        @Inject(IoCId.Infra.NANO_ID_SVC)
+        private nanoIdSvc: INanoIdService
+    ) { }
 
     async insert(topic: Topic): Promise<Topic> {
         if ((await this.database.findTopicExistsByTitle(topic.title))) {

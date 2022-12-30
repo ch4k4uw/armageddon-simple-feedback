@@ -8,11 +8,17 @@ import { ICredentialRepository } from "../../domain/credential/repository/creden
 import { JwToken } from "../../domain/token/entity/jw-token";
 import { RawJwToken } from "../../domain/token/data/raw-jw-token";
 import { IJwTokenCmdRepository } from "../../domain/token/repository/jw-token-cmd-repository";
+import { Inject, Service } from "typedi";
+import { IoCId } from "../../ioc/ioc-id";
 
+@Service()
 export class SignInApp {
     constructor(
+        @Inject(IoCId.Infra.CREDENTIAL_REPOSITORY) 
         private credentialRepository: ICredentialRepository,
+        @Inject(IoCId.Infra.USER_REPOSITORY) 
         private userRepository: IUserRepository,
+        @Inject(IoCId.Infra.JW_TOKEN_REPOSITORY) 
         private jwTokenRepository: IJwTokenCmdRepository,
     ) { }
 

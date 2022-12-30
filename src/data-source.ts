@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import { DataSource, DataSourceOptions } from "typeorm";
 import { SeederOptions } from "typeorm-extension";
 import { DefaultSeeder } from "./infra/database/orm/seeds/default-seeder";
@@ -11,6 +10,7 @@ const dsOptions: DataSourceOptions & SeederOptions = {
     entities: [`${__dirname}/infra/database/orm/*.entity.@(ts|js)`],
     migrations: [`${__dirname}/infra/database/orm/migrations/*.@(ts|js)`],
     seeds: [DefaultSeeder],
+    logger: "debug"
 };
 
 export const appDataSource = new DataSource(dsOptions);

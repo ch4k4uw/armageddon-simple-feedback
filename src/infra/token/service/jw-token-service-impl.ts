@@ -1,16 +1,18 @@
+import Jwt from "jsonwebtoken";
+import { Inject } from "typedi";
+import { LoggedUser } from "../../../domain/common/entity/logged-user";
+import { ExpiredAccessTokenError } from "../../../domain/token/data/expired-access-token-error";
+import { ExpiredRefreshTokenError } from "../../../domain/token/data/expired-refresh-token-error";
+import { InvalidAccessTokenError } from "../../../domain/token/data/invalid-access-token-error";
+import { InvalidRefreshTokenError } from "../../../domain/token/data/invalid-refresh-token-error";
+import { IoCId } from "../../../ioc/ioc-id";
+import { IJwTokenKeyProvider } from "./jw-token-key-provider";
 import { IJwTokenService } from "./jw-token-service";
 import { JwAccessTokenPayloadModel } from "./model/jw-access-token-payload-model";
 import { JwRefreshTokenPayloadModel } from "./model/jw-refresh-token-payload-model";
-import Jwt from "jsonwebtoken";
-import { IJwTokenKeyProvider } from "./jw-token-key-provider";
-import { InvalidRefreshTokenError } from "../../../domain/token/data/invalid-refresh-token-error";
-import { InvalidAccessTokenError } from "../../../domain/token/data/invalid-access-token-error";
-import { LoggedUser } from "../../../domain/common/entity/logged-user";
-import { ExpiredRefreshTokenError } from "../../../domain/token/data/expired-refresh-token-error";
-import { ExpiredAccessTokenError } from "../../../domain/token/data/expired-access-token-error";
 
 export class JwTokenServiceImpl implements IJwTokenService {
-    constructor(private keyProvider: IJwTokenKeyProvider) { }
+    constructor(@Inject(IoCId.Infra.JW_TOKEN_KEY_PROVIDER) private keyProvider: IJwTokenKeyProvider) { }
 
     createAccessToken(payload: JwAccessTokenPayloadModel): Promise<string> {
         return new Promise((resolve, reject) => {

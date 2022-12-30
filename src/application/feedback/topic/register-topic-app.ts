@@ -1,13 +1,19 @@
+import { Inject, Service } from "typedi";
 import { Role } from "../../../domain/credential/data/role";
 import { ExpiredTopicError } from "../../../domain/feedback/data/expired-topic-error";
 import { Topic } from "../../../domain/feedback/entity/topic";
 import { ITopicCmdRepository } from "../../../domain/feedback/repository/topic-cmd-repository";
 import { JwToken } from "../../../domain/token/entity/jw-token";
+import { IoCId } from "../../../ioc/ioc-id";
 import { AccessTokenAssertionApp } from "../common/access-token-assertion-app";
 import { TopicRegistration } from "./data/topic-registration";
 
+@Service()
 export class RegisterTopicApp extends AccessTokenAssertionApp {
-    constructor(private topicRepository: ITopicCmdRepository) {
+    constructor(
+        @Inject(IoCId.Infra.TOPIC_CMD_REPOSITORY)
+        private topicRepository: ITopicCmdRepository
+    ) {
         super([Role.admin]);
     }
 
