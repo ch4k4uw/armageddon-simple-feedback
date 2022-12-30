@@ -1,4 +1,6 @@
 import * as Crypto from "crypto";
+import { Inject } from "typedi";
+import { IoCId } from "../../../ioc/ioc-id";
 import { ICryptoConfigProvider } from "./crypto-config-provider";
 import { ICryptoService } from "./crypto-service";
 
@@ -7,7 +9,7 @@ const blockSize = 8;
 const parallelization = 1;
 
 export class CryptoServiceImpl implements ICryptoService {
-    constructor(private config: ICryptoConfigProvider) { }
+    constructor(@Inject(IoCId.Infra.CRYPTO_CONFIG_PROVIDER) private config: ICryptoConfigProvider) { }
 
     async hash(plain: string): Promise<string> {
         const salt = Crypto.randomBytes(this.config.randomBytesSize);

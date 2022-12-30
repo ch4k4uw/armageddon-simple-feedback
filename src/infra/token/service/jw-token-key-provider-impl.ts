@@ -1,5 +1,5 @@
-import { IJwTokenKeyProvider } from "./jw-token-key-provider";
 import Jwt from "jsonwebtoken";
+import { IJwTokenKeyProvider } from "./jw-token-key-provider";
 
 export class JwTokenKeyProviderImpl implements IJwTokenKeyProvider {
     get accessToken(): string {

@@ -1,15 +1,20 @@
+import { Inject } from "typedi";
 import { ExpiredTopicError } from "../../../domain/feedback/data/expired-topic-error";
 import { FeedbackPage } from "../../../domain/feedback/data/feedback-page";
 import { TopicNotFoundError } from "../../../domain/feedback/data/topic-not-found-error";
 import { Feedback } from "../../../domain/feedback/entity/feedback";
 import { IFeedbackCmdRepository } from "../../../domain/feedback/repository/feedback-cmd-repository";
+import { IoCId } from "../../../ioc/ioc-id";
 import { IDatabase } from "../../database/database";
 import { FeedbackModel } from "../../database/model/feedback-model";
 import { TopicModel } from "../../database/model/topic-model";
 import { FeedbackInfraConstants } from "./feedback-infra-constants";
 
 export class FeedbackCmdRepositoryImpl implements IFeedbackCmdRepository {
-    constructor(private database: IDatabase) { }
+    constructor(
+        @Inject(IoCId.Infra.DATABASE)
+        private database: IDatabase
+    ) { }
 
     async insert(feedback: Feedback): Promise<Feedback> {
         const topic = await this.assertTopic(feedback.topic);
