@@ -4,9 +4,9 @@ import { Service } from "typedi";
 import { BaseValidator } from "./base-validator";
 
 @Service()
-export class TopicByCodeParamValidator extends BaseValidator {
+export class RegisterOrRequestFeedbackPageParamValidator extends BaseValidator {
     readonly expression = Joi.object().keys({
-        code: Joi.string().required()
+        topic: Joi.string().required()
     });
 
     readonly parseRequest = (req: Request) => req.params;

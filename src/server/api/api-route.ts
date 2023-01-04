@@ -26,14 +26,26 @@ import { RequestTokenHandler } from "./handler/request-token.handler";
 import { RequestTopicPageHandler } from "./handler/request-topic-page.handler";
 import { AuthorizationHeaderValidator } from "./validator/authorization-header.validator";
 import { RegisterOrUpdateTopicBodyValidator } from "./validator/register-or-update-topic-body.validator";
-import { TopicByIdParamValidator } from "./validator/topic-by-id-param.validator";
+import { RequestTopicByIdParamValidator } from "./validator/request-topic-by-id-param.validator";
 import { RequestTokenBodyValidator } from "./validator/request-token-body.validator";
-import { RequestTopicPageHeaderValidator } from "./validator/request-topic-page-header.validator";
+import { RequestPageHeaderValidator } from "./validator/request-page-header.validator";
 import { ValidatorBuilder } from "./validator/validator-builder";
-import { TopicByCodeParamValidator } from "./validator/topic-by-code-param.validator";
+import { RequestTopicByCodeParamValidator } from "./validator/request-topic-by-code-param.validator";
 import { RequestTopicByIdHandler } from "./handler/request-topic-by-id.handler";
 import { RequestTopicByCodeHandler } from "./handler/request-topic-by-code.handler";
 import { UpdateTopicHandler } from "./handler/update-topic.handler";
+import { RegisterFeedbackBodyValidator } from "./validator/register-feedback-body.validator";
+import { RegisterOrRequestFeedbackPageParamValidator } from "./validator/register-or-request-feedback-page-param.validator";
+import { RequestFeedbackPageHandler } from "./handler/request-feedback-page.handler";
+import { RegisterFeedbackHandler } from "./handler/register-feedback.handler";
+import { RequestFeedbackByIdHandler } from "./handler/request-feedback-by-id.handler";
+import { RequestFeedbackByIdParamValidator } from "./validator/request-feedback-by-id-param.validator";
+import { RequestTopicSummaryByIdHandler } from "./handler/request-topic-summary-by-id.handler";
+import { FeedbackNotFoundError } from "../../domain/feedback/data/feedback-not-found-error";
+import { InvalidPageIndexError } from "../../domain/feedback/data/invalid-page-index-error";
+import { InvalidPageSizeError } from "../../domain/feedback/data/invalid-page-size-error";
+import { RatingOutOfRangeError } from "../../domain/feedback/data/rating-out-of-range-error";
+import { ReasonLengthOverflow } from "../../domain/feedback/data/reason-length-overflow-error";
 
 const apiRoutes = {
     requestToken: '/api/v1/token',
@@ -48,6 +60,11 @@ const apiRoutes = {
     requestTopicById: '/api/v1/topic/:id',
     requestTopicByCode:'/api/v1/topic/code-attr/:code',
     updateTopicById: '/api/v1/topic/:id',
+    requestTopicSummaryById: '/api/v1/topic/:id/summary',
+
+    requestFeedbackPage: '/api/v1/topic/:topic/feedback',
+    registerFeedback: '/api/v1/topic/:topic/feedback',
+    requestFeedbackById: '/api/v1/topic/feedback/:id',
 }
 
 @Service()
@@ -62,10 +79,13 @@ export class ApiRoute {
         private validatorBuilder: ValidatorBuilder,
         private requestTokenValidtor: RequestTokenBodyValidator,
         private authorizationHeaderValidator: AuthorizationHeaderValidator,
-        private requestTopicPageHeaderValidator: RequestTopicPageHeaderValidator,
+        private requestPageHeaderValidator: RequestPageHeaderValidator,
         private registerOrUpdateTopicBodyValidator: RegisterOrUpdateTopicBodyValidator,
-        private topicByIdParamValidator: TopicByIdParamValidator,
-        private topicByCodeParamValidator: TopicByCodeParamValidator,
+        private requestTopicByIdParamValidator: RequestTopicByIdParamValidator,
+        private requestTopicByCodeParamValidator: RequestTopicByCodeParamValidator,
+        private registerFeedbackBodyValidator: RegisterFeedbackBodyValidator,
+        private registerOrRequestFeedbackPageParamValidator: RegisterOrRequestFeedbackPageParamValidator,
+        private requestFeedbackByIdParamValidator: RequestFeedbackByIdParamValidator,
 
         private requestHandlerBuilder: RequestHandlerBuilder,
         private requestTokenHandler: RequestTokenHandler,
@@ -78,6 +98,10 @@ export class ApiRoute {
         private requestTopicByIdHandler: RequestTopicByIdHandler,
         private requestTopicByCodeHandler: RequestTopicByCodeHandler,
         private updateTopicHandler: UpdateTopicHandler,
+        private requestTopicSummaryByIdHandler: RequestTopicSummaryByIdHandler,
+        private requestFeedbackPageHandler: RequestFeedbackPageHandler,
+        private registerFeedbackHandler: RegisterFeedbackHandler,
+        private requestFeedbackByIdHandler: RequestFeedbackByIdHandler,
     ) {
         this.router = Router();
         this.setupLogger();
@@ -103,6 +127,10 @@ export class ApiRoute {
         this.setupRequestTopicByIdRoute();
         this.setupRequestTopicByCodeRoute();
         this.setupUpdateTopicRoute();
+        this.setupRequestTopicSummaryByIdRoute();
+        this.setupRequestFeedbackPageRoute();
+        this.setupRegisterFeedbackRoute();
+        this.setupRequestFeedbackByIdRoute();
     }
 
     private setupSignInRoute() {
@@ -233,7 +261,7 @@ export class ApiRoute {
         this.setupGetRoute(
             apiRoutes.requestTopicPage,
             this.validatorBuilder.build(this.authorizationHeaderValidator),
-            this.validatorBuilder.build(this.requestTopicPageHeaderValidator),
+            this.validatorBuilder.build(this.requestPageHeaderValidator),
             this.findTokenMiddleware,
             this.findAccessTokenMiddleware,
             this.requestHandlerBuilder.build(this.requestTopicPageHandler),
@@ -255,7 +283,7 @@ export class ApiRoute {
         this.setupDeleteRoute(
             apiRoutes.removeTopic,
             this.validatorBuilder.build(this.authorizationHeaderValidator),
-            this.validatorBuilder.build(this.topicByIdParamValidator),
+            this.validatorBuilder.build(this.requestTopicByIdParamValidator),
             this.findTokenMiddleware,
             this.findAccessTokenMiddleware,
             this.requestHandlerBuilder.build(this.removeTopicHandler),
@@ -266,7 +294,7 @@ export class ApiRoute {
         this.setupGetRoute(
             apiRoutes.requestTopicById,
             this.validatorBuilder.build(this.authorizationHeaderValidator),
-            this.validatorBuilder.build(this.topicByIdParamValidator),
+            this.validatorBuilder.build(this.requestTopicByIdParamValidator),
             this.findTokenMiddleware,
             this.findAccessTokenMiddleware,
             this.requestHandlerBuilder.build(this.requestTopicByIdHandler)
@@ -276,7 +304,7 @@ export class ApiRoute {
     private setupRequestTopicByCodeRoute() {
         this.setupGetRoute(
             apiRoutes.requestTopicByCode,
-            this.validatorBuilder.build(this.topicByCodeParamValidator),
+            this.validatorBuilder.build(this.requestTopicByCodeParamValidator),
             this.requestHandlerBuilder.build(this.requestTopicByCodeHandler)
         );
     }
@@ -291,6 +319,49 @@ export class ApiRoute {
             this.requestHandlerBuilder.build(this.updateTopicHandler),
         );
     }
+
+    private setupRequestTopicSummaryByIdRoute() {
+        this.setupGetRoute(
+            apiRoutes.requestTopicSummaryById,
+            this.validatorBuilder.build(this.authorizationHeaderValidator),
+            this.validatorBuilder.build(this.requestTopicByIdParamValidator),
+            this.findTokenMiddleware,
+            this.findAccessTokenMiddleware,
+            this.requestHandlerBuilder.build(this.requestTopicSummaryByIdHandler),
+        );
+    }
+
+    private setupRequestFeedbackPageRoute() {
+        this.setupGetRoute(
+            apiRoutes.requestFeedbackPage,
+            this.validatorBuilder.build(this.authorizationHeaderValidator),
+            this.validatorBuilder.build(this.registerOrRequestFeedbackPageParamValidator),
+            this.validatorBuilder.build(this.requestPageHeaderValidator),
+            this.findTokenMiddleware,
+            this.findAccessTokenMiddleware,
+            this.requestHandlerBuilder.build(this.requestFeedbackPageHandler),
+        );
+    }
+
+    private setupRegisterFeedbackRoute() {
+        this.setupPostRoute(
+            apiRoutes.registerFeedback,
+            this.validatorBuilder.build(this.registerFeedbackBodyValidator),
+            this.requestHandlerBuilder.build(this.registerFeedbackHandler),
+        );
+    }
+
+    private setupRequestFeedbackByIdRoute() {
+        this.setupGetRoute(
+            apiRoutes.requestFeedbackById,
+            this.validatorBuilder.build(this.authorizationHeaderValidator),
+            this.validatorBuilder.build(this.requestFeedbackByIdParamValidator),
+            this.findTokenMiddleware,
+            this.findAccessTokenMiddleware,
+            this.requestHandlerBuilder.build(this.requestFeedbackByIdHandler),
+        );
+    }
+
 
     private setupErrorHandler() {
         this.router.use((err: Error, req: Request, res: Response, next: NextFunction) => {
@@ -318,12 +389,17 @@ export class ApiRoute {
                     message = err.message;
                     errorCode = 409;
                 } else if (
-                    err instanceof ExpiredTopicError
+                    err instanceof ExpiredTopicError ||
+                    err instanceof InvalidPageIndexError ||
+                    err instanceof InvalidPageSizeError ||
+                    err instanceof RatingOutOfRangeError ||
+                    err instanceof ReasonLengthOverflow
                 ) {
                     message = err.message;
                     errorCode = 400;
                 } else if (
-                    err instanceof TopicNotFoundError
+                    err instanceof TopicNotFoundError ||
+                    err instanceof FeedbackNotFoundError
                 ) {
                     message = err.message;
                     errorCode = 404;

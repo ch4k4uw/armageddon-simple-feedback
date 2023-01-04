@@ -4,7 +4,7 @@ import { Service } from "typedi";
 import { BaseValidator } from "./base-validator";
 
 @Service()
-export class RequestTopicPageHeaderValidator extends BaseValidator {
+export class RequestPageHeaderValidator extends BaseValidator {
     readonly expression = Joi.object().keys({
         'page-query': Joi.string().optional(),
         'page-size': Joi.number().default(10),

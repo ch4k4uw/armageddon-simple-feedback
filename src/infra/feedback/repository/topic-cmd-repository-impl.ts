@@ -148,9 +148,9 @@ export class TopicCmdRepositoryImpl implements ITopicCmdRepository {
         return new TopicSummary(
             summary.topic,
             summary.expiresIn,
-            summary.ratingSum / summary.answers,
-            summary.ratingHigh,
-            summary.ratingLow,
+            summary.answers > 0 ? summary.ratingSum / summary.answers : 0,
+            summary.answers > 0 ? summary.ratingHigh : 0,
+            summary.answers > 0 ? summary.ratingLow : 0,
             summary.answers,
         );
     }
