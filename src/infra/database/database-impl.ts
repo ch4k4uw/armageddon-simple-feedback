@@ -103,12 +103,16 @@ export class DatabaseImpl implements IDatabase {
         return topicEntityToModel(await repo.findOneBy({ code })) || null;
     }
 
-    async findTopicExistsByTitle(title: string): Promise<boolean> {
+    async findTopicExistsByTitle(title: string, exceptId?: string): Promise<boolean> {
         const repo = this.dataSource.getRepository(TopicEntity);
-        const many = await repo.find({
-            select: ["lowerTitle"],
-            where: { title: title.toLowerCase() }
-        });
+        let qb = repo.createQueryBuilder("t")
+            .select(["t.id", "t.lowerTitle"])
+            .where("t.lowerTitle=:lt", { lt: title.toLowerCase() });
+
+        if (exceptId) {
+            qb = qb.andWhere("t.id!=:id", { id: exceptId });
+        }
+        const many = await qb.getMany();
         return many.length !== 0;
     }
 
@@ -174,9 +178,9 @@ export class DatabaseImpl implements IDatabase {
         topic: string, index: number, size: number, options?: IFeedbackQueryOptions
     ): Promise<PagedModel<FeedbackModel>> {
         const repo = this.dataSource.getRepository(FeedbackEntity);
-        const id = `f.topicId=:id`;
-        const reason = `f.lowerReason LIKE :reason`;
-        const rating = `f.rating=:rating`;
+        const id = "f.topicId=:id";
+        const reason = "f.lowerReason LIKE :reason";
+        const rating = "f.rating=:rating";
         let qb = repo.createQueryBuilder("f");
         let countQb = repo.createQueryBuilder("f");
         let addOr = false;

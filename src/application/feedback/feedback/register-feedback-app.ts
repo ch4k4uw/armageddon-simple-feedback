@@ -26,8 +26,8 @@ export class RegisterFeedbackApp {
         return await this.feedbackRepository.insert(domainFeedback);
     }
 
-    private assertReasonLength(reason: string) {
-        if (reason.length >= FeedbackConstants.maxFeedbackReasonLength) {
+    private assertReasonLength(reason?: string) {
+        if (reason && reason.length >= FeedbackConstants.maxFeedbackReasonLength) {
             throw new ReasonLengthOverflow();
         }
     }

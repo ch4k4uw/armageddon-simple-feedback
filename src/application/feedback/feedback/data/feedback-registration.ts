@@ -1,7 +1,7 @@
 export class FeedbackRegistration {
     constructor(
-        public topic: string,
-        public rating: number,
-        public reason: string,
+        public readonly topic: string,
+        public readonly rating: number,
+        public readonly reason?: string,
     ) { }
 }

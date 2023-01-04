@@ -68,6 +68,18 @@ export namespace CommonFeedbackFixture {
             return this.topic.value[1];
         }
 
+        static get topic3() {
+            return this.topic.value[2];
+        }
+
+        static get topic4() {
+            return this.topic.value[3];
+        }
+
+        static get topic5() {
+            return this.topic.value[4];
+        }
+
         static get topic10() {
             return this.topic.value[9];
         }

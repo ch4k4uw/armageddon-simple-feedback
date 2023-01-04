@@ -316,7 +316,7 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
 
                 expect(result).toEqual(true);
                 verify(dataSource.getRepository(anything())).once();
-                verify(topicRepo.find(anything())).once();
+                verify(topicRepo.createQueryBuilder(anything())).once();
             });
 
             test('shouldn\'t find a topic', async () => {
@@ -326,7 +326,7 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
 
                 expect(result).toEqual(false);
                 verify(dataSource.getRepository(anything())).once();
-                verify(topicRepo.find(anything())).once();
+                verify(topicRepo.createQueryBuilder(anything())).once();
             });
 
         });
@@ -535,7 +535,9 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
         return result;
     }
 
-    function setupTopicRepository(selectQueryBuilder?: SelectQueryBuilder<TopicEntity>) {
+    function setupTopicRepository(
+        selectQueryBuilder?: SelectQueryBuilder<TopicEntity>,
+    ) {
         const result = mock<Repository<TopicEntity>>();
 
         when(result.create(anything())).thenCall((...args: any[]) => args[0]);
@@ -567,7 +569,7 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
             if (where instanceof Array) {
                 return [];
             }
-            switch (where?.title) {
+            switch (where?.lowerTitle) {
                 case DatabaseFixture.Topic.FindExistsByTitle.Success.topicEntity.lowerTitle:
                     return [DatabaseFixture.Topic.FindExistsByTitle.Success.topicEntity];
                 default:
@@ -599,7 +601,23 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
     function setupTopicSelectQueryBuilder() {
         const result = mock<SelectQueryBuilder<TopicEntity>>();
 
-        when(result.where(anything(), anything())).thenCall(() => instance(result));
+        let isExistsByTitle = false;
+        let isExistingTopic = false;
+
+        when(result.select(anything())).thenCall((...args: any[]) => {
+            isExistsByTitle = (args[0] as Array<string>).length == 2 &&
+                ((args[0] as Array<string>)[0]) === "t.id" &&
+                ((args[0] as Array<string>)[1]) === "t.lowerTitle";
+            return instance(result);
+        });
+        when(result.where(anything(), anything())).thenCall((...args: any[]) => {
+            if (isExistsByTitle) {
+                const { lt } = (args[1] as { lt: string });
+                isExistingTopic = lt === DatabaseFixture.Topic.FindExistsByTitle.Success.topicEntity.lowerTitle;
+            }
+            return instance(result);
+        });
+        when(result.andWhere(anything(), anything())).thenCall(() => instance(result));
         when(result.limit(anyNumber())).thenCall(() => instance(result));
         when(result.offset(anyNumber())).thenCall(() => instance(result));
         when(result.orderBy(anyString(), anyString())).thenCall(() => instance(result));
@@ -607,12 +625,18 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
         const pageSize = DatabaseFixture.Topic.FindPage.Success.pageSize;
         const startOffset = (pageIndex - 1) * pageSize;
         const endOffset = startOffset + pageSize;
-        when(result.getMany()).thenResolve(
-            DatabaseFixture.Topic.FindPage.Success.topicEntityList.slice(
+        when(result.getMany()).thenCall(async () => {
+            if (isExistsByTitle) {
+                if (isExistingTopic) {
+                    return [DatabaseFixture.Topic.FindExistsByTitle.Success.topicEntity];
+                }
+                return [];
+            }
+            return DatabaseFixture.Topic.FindPage.Success.topicEntityList.slice(
                 startOffset,
                 endOffset,
             )
-        );
+        });
         when(result.getCount()).thenResolve(
             DatabaseFixture.Topic.FindPage.Success.topicEntityList.length
         )
