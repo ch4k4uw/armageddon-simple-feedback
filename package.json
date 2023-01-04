@@ -34,7 +34,16 @@
       "verbose": true,
       "collectCoverageFrom": [
          "src/**/*.{ts,tsx,js,jsx}",
-         "!src/**/*.d.ts"
+         "!src/**/*.d.ts",
+         "!src/server/**/*",
+         "!src/**/*.entity.ts",
+         "!src/data-source.ts",
+         "!src/index.ts",
+         "!src/root-path.ts",
+         "!src/domain/common/service/**/*.ts",
+         "!src/infra/database/orm/**/*.ts",
+         "!src/infra/database/orm/migrations/**/*.ts",
+         "!src/ioc/**/*.ts"
       ]
    },
    "author": "Pedro Motta",
