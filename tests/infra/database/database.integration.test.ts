@@ -250,7 +250,6 @@ describe('Databas integration test', () => {
 
         let summary = await db.findFeedbackSummariesByTopicId(topicPage.result[0].id);
 
-        console.log(summary.length);
         expect(feedbackPage.result.length).toEqual(summary.length % currFeedbackSize);
 
         currFeedbackIndex = 1;
