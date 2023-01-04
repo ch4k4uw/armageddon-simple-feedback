@@ -1,6 +1,7 @@
 import { anyNumber, anyString, anything, mock, when } from "ts-mockito";
 import { TopicPage } from "../../../../../src/domain/feedback/data/topic-page";
 import { TopicSummary } from "../../../../../src/domain/feedback/data/topic-summary";
+import { Topic } from "../../../../../src/domain/feedback/entity/topic";
 import { IDatabase } from "../../../../../src/infra/database/database";
 import { PagedModel } from "../../../../../src/infra/database/model/paged-model";
 import { FeedbackInfraConstants } from "../../../../../src/infra/feedback/repository/feedback-infra-constants";
@@ -28,18 +29,43 @@ export namespace TopicFixture {
         export class Success {
             private constructor() { }
             static get topic() {
-                return CommonFeedbackFixture.Common.topic1;
+                return CommonFeedbackFixture.Common.topic3;
             }
 
             static get topicDomain() {
-                return CommonFeedbackFixture.Common.topic1.asDomain;
+                return CommonFeedbackFixture.Common.topic3.asDomain;
+            }
+
+            static get newTopicDomain() {
+                return new Topic(
+                    this.topicDomain.id,
+                    undefined,
+                    this.topicDomain.title,
+                    this.topicDomain.description,
+                    undefined,
+                    undefined,
+                    this.topicDomain.expires,
+                    undefined,
+                    this.topicDomain.updated,
+                );
             }
         }
 
         export class NotFound {
             private constructor() { }
             static get topicDomain() {
-                return CommonFeedbackFixture.Common.topic2.asDomain;
+                return CommonFeedbackFixture.Common.topic4.asDomain;
+            }
+        }
+
+        export class Duplication {
+            private constructor() { }
+            static get topic() {
+                return CommonFeedbackFixture.Common.topic5;
+            }
+
+            static get topicDomain() {
+                return CommonFeedbackFixture.Common.topic5.asDomain;
             }
         }
     }
@@ -175,6 +201,9 @@ export namespace TopicFixture {
 
         when(database.findTopicExistsByTitle(Insert.Success.topicDomain.title)).thenResolve(false);
         when(database.findTopicExistsByTitle(Insert.Duplication.topicDomain.title)).thenResolve(true);
+        when(database.findTopicExistsByTitle(Update.Success.topicDomain.title)).thenResolve(false);
+        when(database.findTopicExistsByTitle(Update.NotFound.topicDomain.title)).thenResolve(false);
+        when(database.findTopicExistsByTitle(Update.Duplication.topicDomain.title, Update.Duplication.topicDomain.id)).thenResolve(true);
 
         when(database.findTopicExistsByCode("code1")).thenResolve(true);
         when(database.findTopicExistsByCode("code2")).thenResolve(true);
@@ -185,6 +214,7 @@ export namespace TopicFixture {
 
         when(database.findTopicById(Update.Success.topic.id)).thenResolve(Update.Success.topic);
         when(database.findTopicById(Update.NotFound.topicDomain.id)).thenCall(async () => null);
+        when(database.findTopicById(Update.Duplication.topicDomain.id)).thenResolve(Update.Duplication.topic);
         when(database.findTopicById(Delete.Success.topic.id)).thenResolve(Delete.Success.topic);
         when(database.findTopicById(Delete.NotFound.topicDomain.id)).thenCall(async () => null);
 

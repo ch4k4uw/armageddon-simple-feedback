@@ -71,12 +71,15 @@ describe('Topic repository tests', () => {
         });
 
         test('should update a topic', async () => {
-            const result = await repo.update(TopicFixture.Update.Success.topicDomain);
-            expect(result.id).toEqual(TopicFixture.Insert.Success.topicDomain.id);
-            expect(result.code).toEqual(TopicFixture.Insert.Success.topicDomain.code);
-            expect(result.created).toEqual(TopicFixture.Insert.Success.topicDomain.created);
-            expect(result.updated).not.toEqual(TopicFixture.Insert.Success.topicDomain.updated);
+            const result = await repo.update(TopicFixture.Update.Success.newTopicDomain);
+            expect(result.id).toEqual(TopicFixture.Update.Success.topicDomain.id);
+            expect(result.code).toEqual(TopicFixture.Update.Success.topicDomain.code);
+            expect(result.author).toEqual(TopicFixture.Update.Success.topicDomain.author);
+            expect(result.authorName).toEqual(TopicFixture.Update.Success.topicDomain.authorName);
+            expect(result.created).toEqual(TopicFixture.Update.Success.topicDomain.created);
+            expect(result.updated).not.toEqual(TopicFixture.Update.Success.topicDomain.updated);
             verify(database.findTopicById(anyString())).once();
+            verify(database.findTopicExistsByTitle(anyString(), anything())).once();
             verify(database.updateTopic(anything())).once();
         });
 
@@ -84,6 +87,16 @@ describe('Topic repository tests', () => {
             const result = await repo.update(TopicFixture.Update.NotFound.topicDomain);
             expect(result).toEqual(Topic.empty)
             verify(database.findTopicById(anyString())).once();
+            verify(database.findTopicExistsByTitle(anyString(), anything())).never();
+            verify(database.updateTopic(anything())).never();
+        });
+
+        reject('should reject with topic duplication error', async () => {
+            await repo.update(TopicFixture.Update.Duplication.topicDomain);
+        }, (err) => {
+            expect(err).toBeInstanceOf(TopicDuplicationError);
+            verify(database.findTopicById(anyString())).once();
+            verify(database.findTopicExistsByTitle(anyString(), anything())).once();
             verify(database.updateTopic(anything())).never();
         });
     });

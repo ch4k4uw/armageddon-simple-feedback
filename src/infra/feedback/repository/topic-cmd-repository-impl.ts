@@ -63,13 +63,16 @@ export class TopicCmdRepositoryImpl implements ITopicCmdRepository {
         if (existentTopic === Topic.empty) {
             return Topic.empty;
         }
+        if ((await this.database.findTopicExistsByTitle(topic.title, existentTopic.id))) {
+            throw new TopicDuplicationError();
+        }
         const topicModel = new TopicModel(
-            topic.id,
-            topic.code,
+            existentTopic.id,
+            existentTopic.code,
             topic.title,
             topic.description,
-            topic.author,
-            topic.authorName,
+            existentTopic.author,
+            existentTopic.authorName,
             topic.expires.getTime(),
             existentTopic.created.getTime(),
             this.database.dateTime,

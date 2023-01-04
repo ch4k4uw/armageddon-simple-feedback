@@ -4,23 +4,36 @@ import { Service } from "typedi";
 import { FindAccessTokenApp } from "../../application/token/find-access-token-app";
 import { FindRefreshTokenApp } from "../../application/token/find-refresh-token-app";
 import { InvalidUserOrPasswordError } from "../../domain/credential/data/invalid-login-or-password-error";
+import { ExpiredTopicError } from "../../domain/feedback/data/expired-topic-error";
+import { TopicDuplicationError } from "../../domain/feedback/data/topic-duplication-error";
+import { TopicNotFoundError } from "../../domain/feedback/data/topic-not-found-error";
 import { ExpiredAccessTokenError } from "../../domain/token/data/expired-access-token-error";
 import { ExpiredRefreshTokenError } from "../../domain/token/data/expired-refresh-token-error";
 import { InvalidAccessTokenError } from "../../domain/token/data/invalid-access-token-error";
 import { InvalidRefreshTokenError } from "../../domain/token/data/invalid-refresh-token-error";
 import { RawJwToken } from "../../domain/token/data/raw-jw-token";
 import { JwToken } from "../../domain/token/entity/jw-token";
-import { IReqAuth, IReqToken } from "./common/req-auth";
+import { IAuthRequest } from "./common/req-auth";
 import { Logger } from "./common/service/logger";
 import { RequestAuthHeaderParser } from "./common/service/request-auth-header-parser";
 import { RefreshTokenHandler } from "./handler/refresh-token-.handler";
+import { RegisterTopicHandler } from "./handler/register-topic.handler";
 import { RemoveTokenHandler } from "./handler/remove-token.handler";
+import { RemoveTopicHandler } from "./handler/remove-topic.handler";
 import { RequestHandlerBuilder } from "./handler/request-handler-builder";
 import { RequestLoggedUserHandler } from "./handler/request-logged-user.handler";
 import { RequestTokenHandler } from "./handler/request-token.handler";
+import { RequestTopicPageHandler } from "./handler/request-topic-page.handler";
 import { AuthorizationHeaderValidator } from "./validator/authorization-header.validator";
+import { RegisterOrUpdateTopicBodyValidator } from "./validator/register-or-update-topic-body.validator";
+import { TopicByIdParamValidator } from "./validator/topic-by-id-param.validator";
 import { RequestTokenBodyValidator } from "./validator/request-token-body.validator";
+import { RequestTopicPageHeaderValidator } from "./validator/request-topic-page-header.validator";
 import { ValidatorBuilder } from "./validator/validator-builder";
+import { TopicByCodeParamValidator } from "./validator/topic-by-code-param.validator";
+import { RequestTopicByIdHandler } from "./handler/request-topic-by-id.handler";
+import { RequestTopicByCodeHandler } from "./handler/request-topic-by-code.handler";
+import { UpdateTopicHandler } from "./handler/update-topic.handler";
 
 const apiRoutes = {
     requestToken: '/api/v1/token',
@@ -28,6 +41,13 @@ const apiRoutes = {
     revokeToken: '/api/v1/token',
 
     getMe: '/api/v1/me',
+
+    requestTopicPage: '/api/v1/topic/page',
+    registerTopic: '/api/v1/topic',
+    removeTopic: '/api/v1/topic/:id',
+    requestTopicById: '/api/v1/topic/:id',
+    requestTopicByCode:'/api/v1/topic/code-attr/:code',
+    updateTopicById: '/api/v1/topic/:id',
 }
 
 @Service()
@@ -42,12 +62,22 @@ export class ApiRoute {
         private validatorBuilder: ValidatorBuilder,
         private requestTokenValidtor: RequestTokenBodyValidator,
         private authorizationHeaderValidator: AuthorizationHeaderValidator,
+        private requestTopicPageHeaderValidator: RequestTopicPageHeaderValidator,
+        private registerOrUpdateTopicBodyValidator: RegisterOrUpdateTopicBodyValidator,
+        private topicByIdParamValidator: TopicByIdParamValidator,
+        private topicByCodeParamValidator: TopicByCodeParamValidator,
 
         private requestHandlerBuilder: RequestHandlerBuilder,
         private requestTokenHandler: RequestTokenHandler,
         private requestLoggedUserHandler: RequestLoggedUserHandler,
         private refreshTokenHandler: RefreshTokenHandler,
         private removeTokenHandler: RemoveTokenHandler,
+        private requestTopicPageHandler: RequestTopicPageHandler,
+        private registerTopicHandler: RegisterTopicHandler,
+        private removeTopicHandler: RemoveTopicHandler,
+        private requestTopicByIdHandler: RequestTopicByIdHandler,
+        private requestTopicByCodeHandler: RequestTopicByCodeHandler,
+        private updateTopicHandler: UpdateTopicHandler,
     ) {
         this.router = Router();
         this.setupLogger();
@@ -67,36 +97,50 @@ export class ApiRoute {
         this.setupFindLoggedUserRoute();
         this.setupRefreshTokenRoute();
         this.setupRemoveRefreshTokenRoute();
+        this.setupRequestTopicPageRoute();
+        this.setupRegisterTopicRoute();
+        this.setupRemoveTopicRoute();
+        this.setupRequestTopicByIdRoute();
+        this.setupRequestTopicByCodeRoute();
+        this.setupUpdateTopicRoute();
     }
 
     private setupSignInRoute() {
-        const route = apiRoutes.requestToken;
-        this.router.post(
-            route,
+        this.setupPostRoute(
+            apiRoutes.requestToken,
             this.validatorBuilder.build(this.requestTokenValidtor),
             this.requestHandlerBuilder.build(this.requestTokenHandler),
         );
+    }
+
+    private setupPostRoute(route: string, ...handlers: RequestHandler[]) {
+        const fn: Function = this.router.post;
+        fn.apply(this.router, [route, ...handlers]);
         this.logger.logDebug(`Route "POST: ${route}" registered`);
     }
 
     private setupFindLoggedUserRoute() {
-        const route = apiRoutes.getMe;
-        this.router.get(
-            route,
+        this.setupGetRoute(
+            apiRoutes.getMe,
             this.validatorBuilder.build(this.authorizationHeaderValidator),
             this.findTokenMiddleware,
             this.findAccessTokenMiddleware,
             this.requestHandlerBuilder.build(this.requestLoggedUserHandler),
         );
+    }
+
+    private setupGetRoute(route: string, ...handlers: RequestHandler[]) {
+        const fn: Function = this.router.get;
+        fn.apply(this.router, [route, ...handlers]);
         this.logger.logDebug(`Route "GET: ${route}" registered`);
     }
 
     private get findTokenMiddleware(): RequestHandler {
         return this.asCatched((req, _res, next) => {
             const token = this.requestAuthHeaderParser.parse(req);
-            const resume = req as IReqAuth;
-            resume.token = {
-                raw: this.assertToken(token),
+            const resume = req as IAuthRequest;
+            resume.auth = {
+                rawToken: this.assertToken(token),
                 token: new JwToken()
             }
             next();
@@ -110,9 +154,7 @@ export class ApiRoute {
         return token;
     }
 
-    private asCatched<P, ResBody, ReqBody, ReqQuery, Locals>(
-        handler: RequestHandler<P, ResBody, ReqBody, ReqQuery, Locals>
-    ): RequestHandler<P, ResBody, ReqBody, ReqQuery, Locals> {
+    private asCatched(handler: RequestHandler): RequestHandler {
         return async (req, res, next) => {
             try {
                 await handler(req, res, next);
@@ -134,30 +176,29 @@ export class ApiRoute {
     }
 
     private async findJwTokenMiddleware(
-        req: Request, appFn: (rawToken: string | undefined) => Promise<JwToken>
+        req: IAuthRequest | Request, appFn: (rawToken: string | undefined) => Promise<JwToken>
     ) {
-        const authReq = req as IReqAuth;
-        const jwToken = await appFn(authReq.token?.raw);
-        const token = this.assertIToken(authReq.token);
-        token.token = jwToken;
-    }
-
-    private assertIToken(token: IReqToken | undefined): IReqToken {
-        if (!token) {
-            throw new Error();
+        const authReq = req as IAuthRequest;
+        if (!authReq.auth) {
+            throw new Error("missing 'auth' field");
         }
-        return token;
+        const jwToken = await appFn(authReq.auth.rawToken);
+        authReq.auth.token = jwToken;
     }
 
     private setupRefreshTokenRoute() {
-        const route = apiRoutes.refreshToken;
-        this.router.put(
-            route,
+        this.setupPutRoute(
+            apiRoutes.refreshToken,
             this.validatorBuilder.build(this.authorizationHeaderValidator),
             this.findTokenMiddleware,
             this.findRefreshTokenMiddleware,
             this.requestHandlerBuilder.build(this.refreshTokenHandler),
         );
+    }
+
+    private setupPutRoute(route: string, ...handlers: RequestHandler[]) {
+        const fn: Function = this.router.put;
+        fn.apply(this.router, [route, ...handlers]);
         this.logger.logDebug(`Route "PUT: ${route}" registered`);
     }
 
@@ -173,15 +214,82 @@ export class ApiRoute {
     }
 
     private setupRemoveRefreshTokenRoute() {
-        const route = apiRoutes.revokeToken;
-        this.router.delete(
-            route,
+        this.setupDeleteRoute(
+            apiRoutes.revokeToken,
             this.validatorBuilder.build(this.authorizationHeaderValidator),
             this.findTokenMiddleware,
             this.findRefreshTokenMiddleware,
             this.requestHandlerBuilder.build(this.removeTokenHandler),
         );
+    }
+
+    private setupDeleteRoute(route: string, ...handlers: RequestHandler[]) {
+        const fn: Function = this.router.delete;
+        fn.apply(this.router, [route, ...handlers]);
         this.logger.logDebug(`Route "DELETE: ${route}" registered`);
+    }
+
+    private setupRequestTopicPageRoute() {
+        this.setupGetRoute(
+            apiRoutes.requestTopicPage,
+            this.validatorBuilder.build(this.authorizationHeaderValidator),
+            this.validatorBuilder.build(this.requestTopicPageHeaderValidator),
+            this.findTokenMiddleware,
+            this.findAccessTokenMiddleware,
+            this.requestHandlerBuilder.build(this.requestTopicPageHandler),
+        );
+    }
+
+    private setupRegisterTopicRoute() {
+        this.setupPostRoute(
+            apiRoutes.registerTopic,
+            this.validatorBuilder.build(this.authorizationHeaderValidator),
+            this.validatorBuilder.build(this.registerOrUpdateTopicBodyValidator),
+            this.findTokenMiddleware,
+            this.findAccessTokenMiddleware,
+            this.requestHandlerBuilder.build(this.registerTopicHandler),
+        );
+    }
+
+    private setupRemoveTopicRoute() {
+        this.setupDeleteRoute(
+            apiRoutes.removeTopic,
+            this.validatorBuilder.build(this.authorizationHeaderValidator),
+            this.validatorBuilder.build(this.topicByIdParamValidator),
+            this.findTokenMiddleware,
+            this.findAccessTokenMiddleware,
+            this.requestHandlerBuilder.build(this.removeTopicHandler),
+        );
+    }
+
+    private setupRequestTopicByIdRoute() {
+        this.setupGetRoute(
+            apiRoutes.requestTopicById,
+            this.validatorBuilder.build(this.authorizationHeaderValidator),
+            this.validatorBuilder.build(this.topicByIdParamValidator),
+            this.findTokenMiddleware,
+            this.findAccessTokenMiddleware,
+            this.requestHandlerBuilder.build(this.requestTopicByIdHandler)
+        );
+    }
+
+    private setupRequestTopicByCodeRoute() {
+        this.setupGetRoute(
+            apiRoutes.requestTopicByCode,
+            this.validatorBuilder.build(this.topicByCodeParamValidator),
+            this.requestHandlerBuilder.build(this.requestTopicByCodeHandler)
+        );
+    }
+
+    private setupUpdateTopicRoute() {
+        this.setupPutRoute(
+            apiRoutes.updateTopicById,
+            this.validatorBuilder.build(this.authorizationHeaderValidator),
+            this.validatorBuilder.build(this.registerOrUpdateTopicBodyValidator),
+            this.findTokenMiddleware,
+            this.findAccessTokenMiddleware,
+            this.requestHandlerBuilder.build(this.updateTopicHandler),
+        );
     }
 
     private setupErrorHandler() {
@@ -204,6 +312,21 @@ export class ApiRoute {
                     err instanceof ExpiredRefreshTokenError) {
                     message = err.message;
                     errorCode = 401;
+                } else if (
+                    err instanceof TopicDuplicationError
+                ) {
+                    message = err.message;
+                    errorCode = 409;
+                } else if (
+                    err instanceof ExpiredTopicError
+                ) {
+                    message = err.message;
+                    errorCode = 400;
+                } else if (
+                    err instanceof TopicNotFoundError
+                ) {
+                    message = err.message;
+                    errorCode = 404;
                 }
 
                 if (message) {

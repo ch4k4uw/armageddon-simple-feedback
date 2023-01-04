@@ -148,6 +148,7 @@ describe('Databas integration test', () => {
         expect(topic).not.toBeNull();
 
         expect(await db.findTopicExistsByTitle(topic?.title?.toUpperCase() || "")).toEqual(true);
+        expect(await db.findTopicExistsByTitle(topic?.title?.toUpperCase() || "", topic?.id)).toEqual(false);
         expect(await db.findTopicExistsByTitle((topic?.title || "") + "###")).toEqual(false);
         expect(await db.findTopicExistsByCode(topic?.code || "")).toEqual(true);
         expect(await db.findTopicExistsByCode((topic?.code || "") + "###")).toEqual(false);
@@ -290,7 +291,7 @@ describe('Databas integration test', () => {
             const topic = new TopicModel(
                 await db.createId(),
                 `tpc.code${i+1}`,
-                `tpc.title${i+1}`,
+                `Tpc.Title${i+1}`,
                 `Tpc.Desc${i+1}`,
                 `tpc.author${i+1}`,
                 `tpc.authorName${i+1}`,

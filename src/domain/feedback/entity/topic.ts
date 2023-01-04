@@ -33,7 +33,7 @@ export class Topic {
     }
 
     get isExpired(): boolean {
-        return this.expires !== null && this.expires < (new Date());
+        return this.expires !== null && this.expires.getTime() < (Date.now());
     }
 
     cloneWith(
