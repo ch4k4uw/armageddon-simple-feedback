@@ -15,7 +15,7 @@ export class FindFeedbackApp extends AccessTokenAssertionApp {
         @Inject(IoCId.Infra.FEEDBACK_REPOSITORY)
         private feedbackRepository: IFeedbackRepository,
     ) {
-        super([Role.admin]);
+        super([Role.admin, Role.guest]);
     }
 
     async find(token: JwToken, topic: string, query: FeedbackQuery): Promise<FeedbackPage> {

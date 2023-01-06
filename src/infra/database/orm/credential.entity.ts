@@ -4,6 +4,7 @@ import { UserEntity } from "./user.entity";
 @Entity("credential")
 export class CredentialEntity {
     static readonly ROLE_ADMIN = 1;
+    static readonly ROLE_GUEST = 1<<1;
 
     @PrimaryColumn("text")
     userId: string;

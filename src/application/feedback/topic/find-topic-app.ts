@@ -15,7 +15,7 @@ export class FindTopicApp extends AccessTokenAssertionApp {
         @Inject(IoCId.Infra.TOPIC_REPOSITORY)
         private topicRepository: ITopicRepository,
     ) {
-        super([Role.admin]);
+        super([Role.admin, Role.guest]);
     }
 
     async find(token: JwToken, query: FeedbackQuery): Promise<TopicPage> {

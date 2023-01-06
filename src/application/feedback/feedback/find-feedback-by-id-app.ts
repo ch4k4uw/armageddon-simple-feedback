@@ -13,7 +13,7 @@ export class FindFeedbackByIdApp extends AccessTokenAssertionApp {
         @Inject(IoCId.Infra.FEEDBACK_REPOSITORY)
         private feedbackRepository: IFeedbackRepository,
     ) {
-        super([Role.admin]);
+        super([Role.admin, Role.guest]);
     }
 
     async find(token: JwToken, id: string): Promise<Feedback> {

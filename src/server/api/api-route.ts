@@ -46,6 +46,7 @@ import { InvalidPageIndexError } from "../../domain/feedback/data/invalid-page-i
 import { InvalidPageSizeError } from "../../domain/feedback/data/invalid-page-size-error";
 import { RatingOutOfRangeError } from "../../domain/feedback/data/rating-out-of-range-error";
 import { ReasonLengthOverflow } from "../../domain/feedback/data/reason-length-overflow-error";
+import { UserPrivilegeError } from "../../domain/common/data/user-privilege-error";
 
 const apiRoutes = {
     requestToken: '/api/v1/token',
@@ -373,9 +374,12 @@ export class ApiRoute {
             } else {
                 let message: string | undefined;
                 let errorCode = 500;
-                if (err instanceof InvalidUserOrPasswordError) {
+                if (
+                    err instanceof InvalidUserOrPasswordError ||
+                    err instanceof UserPrivilegeError
+                ) {
                     message = err.message;
-                    errorCode = 401;
+                    errorCode = 403;
                 } else if (
                     err instanceof InvalidAccessTokenError ||
                     err instanceof InvalidRefreshTokenError ||

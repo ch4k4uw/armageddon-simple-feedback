@@ -272,6 +272,9 @@ const roleEntityToModel = (entity: number) => {
     if ((entity & CredentialEntity.ROLE_ADMIN) !== 0) {
         result.push(Role[Role.admin]);
     }
+    if ((entity & CredentialEntity.ROLE_GUEST) !== 0) {
+        result.push(Role[Role.guest]);
+    }
     if (result.length === 0 && entity === 0) {
         result.push(Role[Role.anonymous]);
     }
