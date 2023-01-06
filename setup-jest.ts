@@ -11,5 +11,6 @@ beforeEach(() => {
         ARMAGEDDON_DERIVED_KEY_LEN: '24',
         ARMAGEDDON_NANOID_LEN: '8',
         ARMAGEDDON_SEED_USER_PASS: 'test',
+        ARMAGEDDON_SEED_GUEST_USER_PASS: 'test',
     }
 });
