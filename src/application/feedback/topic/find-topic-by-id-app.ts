@@ -13,7 +13,7 @@ export class FindTopicByIdApp extends AccessTokenAssertionApp {
         @Inject(IoCId.Infra.TOPIC_REPOSITORY)
         private topicRepository: ITopicRepository,
     ) {
-        super([Role.admin]);
+        super([Role.admin, Role.guest]);
     }
 
     async find(token: JwToken, id: string): Promise<Topic> {

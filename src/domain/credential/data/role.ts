@@ -1,3 +1,3 @@
 export enum Role {
-    admin, anonymous
+    admin, anonymous, guest
 }

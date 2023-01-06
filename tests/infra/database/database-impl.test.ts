@@ -1,6 +1,7 @@
 import { anyNumber, anyString, anything, capture, instance, mock, verify, when } from "ts-mockito";
 import { DataSource, EntityManager, FindManyOptions, FindOneOptions, FindOptionsWhere, Repository, SelectQueryBuilder } from "typeorm";
 import * as Uuid from "uuid";
+import { Role } from "../../../src/domain/credential/data/role";
 import { IDatabase } from "../../../src/infra/database/database";
 import { DatabaseImpl } from "../../../src/infra/database/database-impl";
 import { FeedbackModel } from "../../../src/infra/database/model/feedback-model";
@@ -188,16 +189,33 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
             db = new DatabaseImpl(instance(dataSource), createIdFn);
         });
 
-        test('should find a credential', async () => {
-            const result = await db.findCredentialByLogin(
-                DatabaseFixture.Credential.FindByLogin.Success.credentialModel.login
+        test('should find credentials', async () => {
+            let result = await db.findCredentialByLogin(
+                DatabaseFixture.Credential.FindByLogin.Success.credentialModel1.login
             );
 
-            expect({ ...result }).toEqual({ ...DatabaseFixture.Credential.FindByLogin.Success.credentialModel });
-            verify(credentialRepo.findOneBy(anything())).once();
+            expect({ ...result }).toEqual({ ...DatabaseFixture.Credential.FindByLogin.Success.credentialModel1 });
+
+            result = await db.findCredentialByLogin(
+                DatabaseFixture.Credential.FindByLogin.Success.credentialModel2.login
+            );
+
+            expect({ ...result }).toEqual({ ...DatabaseFixture.Credential.FindByLogin.Success.credentialModel2 });
+
+            result = await db.findCredentialByLogin(
+                DatabaseFixture.Credential.FindByLogin.Success.credentialModel3.login
+            );
+
+            expect({ ...result }).toEqual({ ...DatabaseFixture.Credential.FindByLogin.Success.credentialModel3 });
+
+            function verifyIfAllEnumValuesWereMapped() {
+                verify(credentialRepo.findOneBy(anything())).times(Object.keys(Role).filter(k => isNaN(parseInt(k))).length);
+            }
+
+            verifyIfAllEnumValuesWereMapped();
         });
 
-        test('shouldn\'t find n credential', async () => {
+        test('shouldn\'t find a credential', async () => {
             const result = await db.findCredentialByLogin(
                 DatabaseFixture.Credential.FindByLogin.NotFound.credentialEntity.login
             );
@@ -525,8 +543,12 @@ describe('TypeOrm sqlite databaseimpl tests', () => {
             }
             const where = args[0] as FindOptionsWhere<CredentialEntity>;
             switch (where.login) {
-                case DatabaseFixture.Credential.FindByLogin.Success.credentialEntity.login:
-                    return DatabaseFixture.Credential.FindByLogin.Success.credentialEntity;
+                case DatabaseFixture.Credential.FindByLogin.Success.credentialEntity1.login:
+                    return DatabaseFixture.Credential.FindByLogin.Success.credentialEntity1;
+                case DatabaseFixture.Credential.FindByLogin.Success.credentialEntity2.login:
+                        return DatabaseFixture.Credential.FindByLogin.Success.credentialEntity2;
+                case DatabaseFixture.Credential.FindByLogin.Success.credentialEntity3.login:
+                        return DatabaseFixture.Credential.FindByLogin.Success.credentialEntity3;
                 default:
                     return null;
             }

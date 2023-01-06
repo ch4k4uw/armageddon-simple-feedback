@@ -13,14 +13,9 @@ export class CredentialModel {
         return new Credential(
             this.user,
             this.login,
-            this.roles.map((v) => {
-                switch (v) {
-                    case Role[Role.admin]:
-                        return Role.admin;
-                    default:
-                        return Role.anonymous
-                }
-            }),
+            this.roles.map(v => [
+                Object.keys(Role).filter(k => isNaN(parseInt(k))).findIndex(k => k === v)
+            ][0]),
         );
     }
 }

@@ -172,7 +172,7 @@ export namespace DatabaseFixture {
         export namespace FindByLogin {
             export class Success {
                 private constructor() { }
-                static get credentialEntity() {
+                static get credentialEntity1() {
                     return also(new CredentialEntity(), (e) => {
                         e.login = "a1";
                         e.userId = "b1";
@@ -181,12 +181,48 @@ export namespace DatabaseFixture {
                     });
                 }
 
-                static get credentialModel() {
+                static get credentialModel1() {
                     return new CredentialModel(
-                        this.credentialEntity.userId,
-                        this.credentialEntity.login,
-                        this.credentialEntity.password,
+                        this.credentialEntity1.userId,
+                        this.credentialEntity1.login,
+                        this.credentialEntity1.password,
                         [Role[Role.admin]],
+                    );
+                }
+
+                static get credentialEntity2() {
+                    return also(new CredentialEntity(), (e) => {
+                        e.login = "a2";
+                        e.userId = "b2";
+                        e.password = "c2";
+                        e.role = CredentialEntity.ROLE_GUEST;
+                    });
+                }
+
+                static get credentialModel2() {
+                    return new CredentialModel(
+                        this.credentialEntity2.userId,
+                        this.credentialEntity2.login,
+                        this.credentialEntity2.password,
+                        [Role[Role.guest]],
+                    );
+                }
+
+                static get credentialEntity3() {
+                    return also(new CredentialEntity(), (e) => {
+                        e.login = "a3";
+                        e.userId = "b3";
+                        e.password = "c3";
+                        e.role = 0;
+                    });
+                }
+
+                static get credentialModel3() {
+                    return new CredentialModel(
+                        this.credentialEntity3.userId,
+                        this.credentialEntity3.login,
+                        this.credentialEntity3.password,
+                        [Role[Role.anonymous]],
                     );
                 }
             }
@@ -195,9 +231,9 @@ export namespace DatabaseFixture {
                 private constructor() { }
                 static get credentialEntity() {
                     return also(new CredentialEntity(), (e) => {
-                        e.login = "a2";
-                        e.userId = "b2";
-                        e.password = "c2";
+                        e.login = "a4";
+                        e.userId = "b4";
+                        e.password = "c4";
                         e.role = CredentialEntity.ROLE_ADMIN;
                     });
                 }
