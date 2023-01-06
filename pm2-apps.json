@@ -1,0 +1,8 @@
+{
+    "apps" : [{
+      "name": "armageddon-simple-feedback",
+      "script": "./index.js",
+      "watch": false
+    }]
+  }
+  

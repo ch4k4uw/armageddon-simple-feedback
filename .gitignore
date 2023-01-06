@@ -7,4 +7,6 @@ coverage
 tmp
 temp
 .env
+.env-prod
+scripts
 data/db.sqlite
