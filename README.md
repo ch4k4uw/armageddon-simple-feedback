@@ -2,6 +2,14 @@
 A server for some feedback collecting, about some topics, and gives a simple report about the collected feedback.
 This app was created just for study reasons.
 
+# Features
+1. App administration
+   * User authentication and authorization to perform CRUD operations.
+2. Feedback registering
+   * Main purpose of the app: Collect some feedback, limited to a rating from 1 to 5 and a reason text, about a registered topic.
+3. Feedback report
+   * Provides a simple report about the registered feedback.
+
 # Installation
 ## For development:
 ```
