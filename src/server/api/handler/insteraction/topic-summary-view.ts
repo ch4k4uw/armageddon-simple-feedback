@@ -8,6 +8,7 @@ export class TopicSummaryView {
     readonly ratingHigh: number;
     readonly ratingLow: number;
     readonly answers: number;
+    readonly ratingCount: number[];
 
     constructor(topicSummary: TopicSummary) {
         this.topic = new TopicView(topicSummary.topic);
@@ -16,5 +17,6 @@ export class TopicSummaryView {
         this.ratingHigh = topicSummary.ratingHigh;
         this.ratingLow = topicSummary.ratingLow;
         this.answers = topicSummary.answers;
+        this.ratingCount = topicSummary.ratingCount;
     }
 }

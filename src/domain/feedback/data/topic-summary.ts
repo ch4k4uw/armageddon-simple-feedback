@@ -8,6 +8,7 @@ export class TopicSummary {
         public readonly ratingHigh: number = 0,
         public readonly ratingLow: number = 0,
         public readonly answers: number = 0,
+        public readonly ratingCount: number[] = [],
     ) { }
 
     static readonly empty = new TopicSummary();

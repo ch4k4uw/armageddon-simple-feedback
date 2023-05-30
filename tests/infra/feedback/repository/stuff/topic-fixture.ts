@@ -180,6 +180,7 @@ export namespace TopicFixture {
                     5,
                     3,
                     10,
+                    [0, 0, 6, 0, 4],
                 );
             }
         }
