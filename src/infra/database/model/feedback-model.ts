@@ -15,6 +15,7 @@ export class FeedbackModel {
             this.topic,
             this.rating,
             this.reason,
+            this.created,
         );
     }
 }

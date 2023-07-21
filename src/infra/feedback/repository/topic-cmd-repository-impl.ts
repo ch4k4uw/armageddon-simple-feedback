@@ -135,11 +135,13 @@ export class TopicCmdRepositoryImpl implements ITopicCmdRepository {
             prev.ratingHigh = Math.max(prev.ratingHigh, curr.rating);
             prev.ratingLow = Math.min(prev.ratingLow, curr.rating);
             prev.ratingSum += curr.rating;
+            prev.ratingCount[curr.rating - 1] += 1;
             return prev;
         }, {
             topic: topic,
             expiresIn: Math.round((topic.expires.getTime() - Date.now()) / (1000 * 3600 * 24)),
             ratingSum: 0,
+            ratingCount: [0, 0, 0, 0, 0],
             ratingHigh: FeedbackConstants.minRatingValue,
             ratingLow: FeedbackConstants.maxRatingValue,
             answers: feedbackSummariesModel.length,
@@ -152,6 +154,7 @@ export class TopicCmdRepositoryImpl implements ITopicCmdRepository {
             summary.answers > 0 ? summary.ratingHigh : 0,
             summary.answers > 0 ? summary.ratingLow : 0,
             summary.answers,
+            summary.ratingCount,
         );
     }
 }

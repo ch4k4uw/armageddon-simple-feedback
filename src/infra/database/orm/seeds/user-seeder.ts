@@ -10,7 +10,7 @@ export class UserSeeder implements Seeder {
             id: "56b78b70-1c8e-4c13-8f5a-5959dd7f5865",
             firstName: "Pedro",
             lastName: "Motta",
-            email: "garra.e@hotmail.com",
+            email: "garra.e@gmail.com",
             created: now,
             updated: now,
         };
