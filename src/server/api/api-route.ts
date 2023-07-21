@@ -393,7 +393,6 @@ export class ApiRoute {
                     message = err.message;
                     errorCode = 409;
                 } else if (
-                    err instanceof ExpiredTopicError ||
                     err instanceof InvalidPageIndexError ||
                     err instanceof InvalidPageSizeError ||
                     err instanceof RatingOutOfRangeError ||
@@ -401,6 +400,9 @@ export class ApiRoute {
                 ) {
                     message = err.message;
                     errorCode = 400;
+                } else if (err instanceof ExpiredTopicError) {
+                    message = err.message;
+                    errorCode = 410;
                 } else if (
                     err instanceof TopicNotFoundError ||
                     err instanceof FeedbackNotFoundError
