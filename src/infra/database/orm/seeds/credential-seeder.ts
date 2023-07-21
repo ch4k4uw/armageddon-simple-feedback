@@ -1,5 +1,4 @@
 import * as dotenv from "dotenv";
-import { date } from "joi";
 import { DataSource, Repository } from "typeorm";
 import { Seeder, SeederFactoryManager } from "typeorm-extension";
 import { CredentialEntity } from "../credential.entity";
