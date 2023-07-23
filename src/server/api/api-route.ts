@@ -47,8 +47,11 @@ import { InvalidPageSizeError } from "../../domain/feedback/data/invalid-page-si
 import { RatingOutOfRangeError } from "../../domain/feedback/data/rating-out-of-range-error";
 import { ReasonLengthOverflow } from "../../domain/feedback/data/reason-length-overflow-error";
 import { UserPrivilegeError } from "../../domain/common/data/user-privilege-error";
+import { PingHandler } from "./handler/ping.handler";
 
 const apiRoutes = {
+    requestPing: '/api/v1/ping',
+
     requestToken: '/api/v1/token',
     refreshToken: '/api/v1/token',
     revokeToken: '/api/v1/token',
@@ -73,6 +76,9 @@ export class ApiRoute {
     private router: Router;
     constructor(
         private logger: Logger,
+
+        private pingHandler: PingHandler,
+
         private requestAuthHeaderParser: RequestAuthHeaderParser,
         private findAccessTokenSvc: FindAccessTokenApp,
         private findRefreshTokenSvc: FindRefreshTokenApp,
@@ -118,6 +124,7 @@ export class ApiRoute {
     }
 
     private setupRouter() {
+        this.setupPingRoute();
         this.setupSignInRoute();
         this.setupFindLoggedUserRoute();
         this.setupRefreshTokenRoute();
@@ -132,6 +139,19 @@ export class ApiRoute {
         this.setupRequestFeedbackPageRoute();
         this.setupRegisterFeedbackRoute();
         this.setupRequestFeedbackByIdRoute();
+    }
+
+    private setupPingRoute() {
+        this.setupGetRoute(
+            apiRoutes.requestPing,
+            this.requestHandlerBuilder.build(this.pingHandler),
+        );
+    }
+
+    private setupGetRoute(route: string, ...handlers: RequestHandler[]) {
+        const fn: Function = this.router.get;
+        fn.apply(this.router, [route, ...handlers]);
+        this.logger.logDebug(`Route "GET: ${route}" registered`);
     }
 
     private setupSignInRoute() {
@@ -156,12 +176,6 @@ export class ApiRoute {
             this.findAccessTokenMiddleware,
             this.requestHandlerBuilder.build(this.requestLoggedUserHandler),
         );
-    }
-
-    private setupGetRoute(route: string, ...handlers: RequestHandler[]) {
-        const fn: Function = this.router.get;
-        fn.apply(this.router, [route, ...handlers]);
-        this.logger.logDebug(`Route "GET: ${route}" registered`);
     }
 
     private get findTokenMiddleware(): RequestHandler {
