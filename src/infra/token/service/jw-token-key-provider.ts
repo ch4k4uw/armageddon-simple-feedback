@@ -7,4 +7,6 @@ export interface IJwTokenKeyProvider {
     readonly refreshTokenAlgorithm: Jwt.Algorithm;
     readonly accessTokenExpiration: string;
     readonly refreshTokenExpiration: string;
+    readonly metadata: string;
+    readonly metadataAlgorithm: Jwt.Algorithm;
 }

@@ -48,6 +48,10 @@ import { RatingOutOfRangeError } from "../../domain/feedback/data/rating-out-of-
 import { ReasonLengthOverflow } from "../../domain/feedback/data/reason-length-overflow-error";
 import { UserPrivilegeError } from "../../domain/common/data/user-privilege-error";
 import { PingHandler } from "./handler/ping.handler";
+import { RequestTopicByTopicIdMetadataHandler } from "./handler/request-topic-by-topic-id-metadata.handler";
+import { RequestTopicIdMetadataByTopicCodeHandler } from "./handler/request-topic-id-metadata-by-topic-code.handler";
+import { RequestTopicByTopicIdMetadataParamValidator } from "./validator/request-topic-by-topic-id-metadata-param.validator";
+import { RequestTopicIdMetadataByTopicCodeParamValidator } from "./validator/request-topic-id-metadata-by-topic-code-param.validator";
 
 const apiRoutes = {
     requestPing: '/api/v1/ping',
@@ -65,6 +69,9 @@ const apiRoutes = {
     requestTopicByCode:'/api/v1/topic/code-attr/:code',
     updateTopicById: '/api/v1/topic/:id',
     requestTopicSummaryById: '/api/v1/topic/:id/summary',
+    
+    requestTopicByTopicIdMetadata: '/api/v1/topic-id-metadata/:id',
+    requestTopicIdMetadataByTopicCode: '/api/v1/topic-id-metadata/topic/:code',
 
     requestFeedbackPage: '/api/v1/topic/:topic/feedback',
     registerFeedback: '/api/v1/topic/:topic/feedback',
@@ -93,6 +100,8 @@ export class ApiRoute {
         private registerFeedbackBodyValidator: RegisterFeedbackBodyValidator,
         private registerOrRequestFeedbackPageParamValidator: RegisterOrRequestFeedbackPageParamValidator,
         private requestFeedbackByIdParamValidator: RequestFeedbackByIdParamValidator,
+        private requestTopicByTopicIdMetadataParamValidator: RequestTopicByTopicIdMetadataParamValidator,
+        private requestTopicIdMetadataByTopicCodeParamValidator: RequestTopicIdMetadataByTopicCodeParamValidator,
 
         private requestHandlerBuilder: RequestHandlerBuilder,
         private requestTokenHandler: RequestTokenHandler,
@@ -109,6 +118,8 @@ export class ApiRoute {
         private requestFeedbackPageHandler: RequestFeedbackPageHandler,
         private registerFeedbackHandler: RegisterFeedbackHandler,
         private requestFeedbackByIdHandler: RequestFeedbackByIdHandler,
+        private requestTopicByTopicIdMetadataHandler: RequestTopicByTopicIdMetadataHandler,
+        private requestTopicIdMetadataByTopicCodeHandler: RequestTopicIdMetadataByTopicCodeHandler,
     ) {
         this.router = Router();
         this.setupLogger();
@@ -139,6 +150,8 @@ export class ApiRoute {
         this.setupRequestFeedbackPageRoute();
         this.setupRegisterFeedbackRoute();
         this.setupRequestFeedbackByIdRoute();
+        this.setupRequestTopicByTopicIdMetadataRoute();
+        this.setupRequestTopicIdMetadataByTopicCode();
     }
 
     private setupPingRoute() {
@@ -377,6 +390,24 @@ export class ApiRoute {
         );
     }
 
+    private setupRequestTopicByTopicIdMetadataRoute() {
+        this.setupGetRoute(
+            apiRoutes.requestTopicByTopicIdMetadata,
+            this.validatorBuilder.build(this.requestTopicByTopicIdMetadataParamValidator),
+            this.requestHandlerBuilder.build(this.requestTopicByTopicIdMetadataHandler)
+        );
+    }
+
+    private setupRequestTopicIdMetadataByTopicCode() {
+        this.setupGetRoute(
+            apiRoutes.requestTopicIdMetadataByTopicCode,
+            this.validatorBuilder.build(this.authorizationHeaderValidator),
+            this.validatorBuilder.build(this.requestTopicIdMetadataByTopicCodeParamValidator),
+            this.findTokenMiddleware,
+            this.findAccessTokenMiddleware,
+            this.requestHandlerBuilder.build(this.requestTopicIdMetadataByTopicCodeHandler),
+        );
+    }
 
     private setupErrorHandler() {
         this.router.use((err: Error, req: Request, res: Response, next: NextFunction) => {

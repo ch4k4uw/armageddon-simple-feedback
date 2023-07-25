@@ -68,6 +68,18 @@ In order to run this server, you must set the following env vars:
 - ARMAGEDDON_PRIV_KEY
   - The path to the `private key` of the server when it is running in `production`.
   - ex: `ARMAGEDDON_PRIV_KEY="privkey.pem"`
+- ARMAGEDDON_DB_PATH
+  - Path of the database.
+  - ex: `ARMAGEDDON_DB_PATH="/users/admin/app/db.db"`
+- ARMAGEDDON_SYMM_ALGORITHM
+  - Algorithm used to encrypt data
+  - ex: `ARMAGEDDON_SYMM_ALGORITHM="aes192"`
+- ARMAGEDDON_TOPIC_ID_PASS
+  - Password to validate a topic id metadata
+  - ex: `ARMAGEDDON_TOPIC_ID_PASS="I'm a password"`
+- ARMAGEDDON_TOPIC_ID_ALGORITHM
+  - A JWT algorithm used to generate the `topic id metadata`
+  - ex: `ARMAGEDDON_TOPIC_ID_ALGORITHM="HS256"`
 
 
 ## Remarks

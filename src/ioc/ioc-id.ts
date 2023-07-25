@@ -10,6 +10,7 @@ import { IDatabase } from "../infra/database/database";
 import { INanoIdService } from "../infra/feedback/service/nano-id-service";
 import { IJwTokenKeyProvider } from "../infra/token/service/jw-token-key-provider";
 import { IJwTokenService } from "../infra/token/service/jw-token-service";
+import { ITopicIdMetadataRepository } from "../domain/feedback/repository/topic-id-metadata-repository";
 
 export namespace IoCId {
     export namespace Infra {
@@ -33,6 +34,7 @@ export namespace IoCId {
         export const TOPIC_CMD_REPOSITORY = new Token<IJwTokenCmdRepository>('infra.repository.cmd.topic');
         export const FEEDBACK_REPOSITORY = new Token<IJwTokenCmdRepository>('infra.repository.feedback');
         export const FEEDBACK_CMD_REPOSITORY = new Token<IJwTokenCmdRepository>('infra.repository.cmd.feedback');
+        export const TOPIC_ID_METADATA_REPOSITORY = new Token<ITopicIdMetadataRepository>('infra.repository.topic-id-metadata');
     }
     export const FIND_LOGGED_USER_APP = new Token('app.find-logged-user');
     export const SIGN_IN_APP = new Token('app.sign-in');

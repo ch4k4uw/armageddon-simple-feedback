@@ -42,4 +42,16 @@ export class JwTokenKeyProviderImpl implements IJwTokenKeyProvider {
         );
     }
 
+    get metadata(): string {
+        return process.env.ARMAGEDDON_TOPIC_ID_PASS || this.throwNotDefined(
+            "ARMAGEDDON_TOPIC_ID_PASS"
+        );
+    }
+
+    get metadataAlgorithm(): Jwt.Algorithm {
+        return process.env.ARMAGEDDON_TOPIC_ID_ALGORITHM || this.throwNotDefined(
+            "ARMAGEDDON_TOPIC_ID_ALGORITHM"
+        );
+    }
+
 }
