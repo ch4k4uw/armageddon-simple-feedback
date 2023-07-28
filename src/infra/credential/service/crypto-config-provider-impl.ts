@@ -17,4 +17,10 @@ export class CryptoConfigProviderImpl implements ICryptoConfigProvider {
         );
     }
 
+    get symmCiphAlgorithm(): string {
+        return (process.env.ARMAGEDDON_SYMM_ALGORITHM as string) || this.throwNotDefined(
+            "ARMAGEDDON_SYMM_ALGORITHM"
+        );
+    }
+
 }

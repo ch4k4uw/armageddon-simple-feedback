@@ -61,4 +61,77 @@ export class CryptoServiceImpl implements ICryptoService {
             (data.readUInt8(offset + 2) << 0);
     }
 
+    async encrypt(psw: string, plain: string): Promise<string> {
+        const salt = Crypto.randomBytes(this.config.randomBytesSize);
+        const key = await this.deriveKey(psw, salt);
+        const iv = Buffer.alloc(this.config.randomBytesSize, 0);
+        const cipher = Crypto.createCipheriv(this.config.symmCiphAlgorithm, key, iv);
+
+        return new Promise((resolve, reject) => {
+            let result: Buffer | null = null;
+            try {
+                cipher.on("readable", () => {
+                    let chunk;
+                    while (null !== (chunk = cipher.read())) {
+                        if (result == null) {
+                            result = chunk;
+                        } else {
+                            result = Buffer.concat([result, chunk]);
+                        }
+                    }
+                });
+                cipher.on("end", () => {
+                    if (result != null) {
+                        const saltHeader = this.createLenHeader(salt.length);
+                        const resultHeader = this.createLenHeader(result.length);
+                        resolve(Buffer.concat([saltHeader, resultHeader, salt, result]).toString('base64'));
+                    } else {
+                        reject(new Error("invalid state (result is null)"));
+                    }
+                });
+                cipher.on("error", (e) => {
+                    reject(e);
+                });
+                cipher.write(plain);
+                cipher.end();
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
+    async decrypt(psw: string, data: string): Promise<string> {
+        const source = Buffer.from(data, 'base64');
+        const saltLen = this.readLenHeader(source, 0);
+        const dataLen = this.readLenHeader(source, 3);
+        const salt = source.subarray(6, 6 + saltLen);
+
+        const rawData = source.subarray(6 + saltLen, 6 + saltLen + dataLen);
+        const key = await this.deriveKey(psw, salt);
+        const iv = Buffer.alloc(this.config.randomBytesSize, 0);
+        const cipher = Crypto.createDecipheriv(this.config.symmCiphAlgorithm, key, iv);
+
+        return new Promise((resolve, reject) => {
+            let result = "";
+            try {
+                cipher.on("readable", () => {
+                    let chunk;
+                    while (null !== (chunk = cipher.read())) {
+                        result += chunk;
+                    }
+                });
+                cipher.on("end", () => {
+                    resolve(result);
+                });
+                cipher.on("error", (e) => {
+                    reject(e);
+                });
+                cipher.write(rawData);
+                cipher.end();
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
 }

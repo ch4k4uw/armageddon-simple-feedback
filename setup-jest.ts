@@ -12,5 +12,8 @@ beforeEach(() => {
         ARMAGEDDON_NANOID_LEN: '8',
         ARMAGEDDON_SEED_USER_PASS: 'test',
         ARMAGEDDON_SEED_GUEST_USER_PASS: 'test',
+        ARMAGEDDON_SYMM_ALGORITHM: 'aes192',
+        ARMAGEDDON_TOPIC_ID_PASS: 'xyz.123',
+        ARMAGEDDON_TOPIC_ID_ALGORITHM: 'HS256',
     }
 });

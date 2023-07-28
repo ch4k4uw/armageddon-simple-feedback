@@ -12,6 +12,7 @@ import { JwTokenCmdRepositoryImpl } from "../infra/token/repository/jw-token-cmd
 import { JwTokenKeyProviderImpl } from "../infra/token/service/jw-token-key-provider-impl";
 import { JwTokenServiceImpl } from "../infra/token/service/jw-token-service-impl";
 import { IoCId } from "./ioc-id";
+import { TopicIdMetadataRepositoryImpl } from "../infra/feedback/repository/topic-id-metadata-repository-impl";
 
 export namespace IoC {
     export function registerDomainServices(dataSource: DataSource) {
@@ -45,6 +46,7 @@ export namespace IoC {
                 id: IoCId.Infra.FEEDBACK_CMD_REPOSITORY,
                 factory: () => Container.get(IoCId.Infra.FEEDBACK_REPOSITORY)
             },
+            { id: IoCId.Infra.TOPIC_ID_METADATA_REPOSITORY, type: TopicIdMetadataRepositoryImpl },
         ]);
     }
 

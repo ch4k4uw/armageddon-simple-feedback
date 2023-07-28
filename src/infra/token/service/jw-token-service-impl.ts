@@ -10,6 +10,8 @@ import { IJwTokenKeyProvider } from "./jw-token-key-provider";
 import { IJwTokenService } from "./jw-token-service";
 import { JwAccessTokenPayloadModel } from "./model/jw-access-token-payload-model";
 import { JwRefreshTokenPayloadModel } from "./model/jw-refresh-token-payload-model";
+import { JwTopicIdMetadataPayloadModel } from "./model/jw-topic-id-metadata-payload-model";
+import { InvalidTopicIdMetadataError } from "../../../domain/feedback/data/invalid-topic-id-metadata-error";
 
 export class JwTokenServiceImpl implements IJwTokenService {
     constructor(@Inject(IoCId.Infra.JW_TOKEN_KEY_PROVIDER) private keyProvider: IJwTokenKeyProvider) { }
@@ -126,6 +128,48 @@ export class JwTokenServiceImpl implements IJwTokenService {
                                     )
                                 )
                             );
+                        }
+                    }
+                );
+            }, reject);
+        });
+    }
+
+    async createTopicIdMetadataToken(payload: JwTopicIdMetadataPayloadModel): Promise<string> {
+        return new Promise((resolve, reject) => {
+            this.tryBlock(() => {
+                Jwt.sign(
+                    Object.assign({}, payload),
+                    this.keyProvider.metadata,
+                    {
+                        algorithm: this.keyProvider.metadataAlgorithm,
+                    },
+                    (err, encoded) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(encoded || "");
+                        }
+                    }
+                );
+            }, reject);
+        });
+    }
+
+    async verifyTopicIdMetadataToken(raw: string): Promise<JwTopicIdMetadataPayloadModel> {
+        return new Promise((resolve, reject) => {
+            this.tryBlock(() => {
+                Jwt.verify(
+                    raw,
+                    this.keyProvider.metadata,
+                    {
+                        algorithms: [this.keyProvider.metadataAlgorithm],
+                    },
+                    (err, payload) => {
+                        if (err) {
+                            reject(new InvalidTopicIdMetadataError());
+                        } else {
+                            resolve(payload as JwTopicIdMetadataPayloadModel);
                         }
                     }
                 );
